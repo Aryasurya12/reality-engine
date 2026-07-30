@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import Robot from "./Robot";
+import RobotController from "../Robot/RobotController";
 import Blueprint from "./Blueprint";
 import WorkshopObjects from "./WorkshopObjects";
 
@@ -37,9 +37,9 @@ export default function Workbench() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#b58953] to-transparent opacity-10 rounded-t-[100px]" />
         
         {/* Subjects sitting on the desk */}
-        <div className="relative w-full h-full pointer-events-auto">
+        <div className="relative w-full h-full pointer-events-none">
           <Blueprint />
-          <Robot />
+          <RobotController />
         </div>
       </div>
     </div>

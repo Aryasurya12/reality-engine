@@ -2,10 +2,46 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useWorkshopStore } from '@/store/useWorkshopStore';
 
 export default function Lighting() {
   const lightRef = useRef<HTMLDivElement>(null);
   const rayRef = useRef<HTMLDivElement>(null);
+  const { isAwake } = useWorkshopStore();
+
+  useEffect(() => {
+    if (!lightRef.current || !rayRef.current) return;
+
+    // Wake up animation: Lights get slightly brighter and warmer
+    if (isAwake) {
+      gsap.to(lightRef.current, {
+        opacity: 0.6,
+        duration: 3,
+        ease: 'power2.inOut',
+        filter: 'blur(30px)' // Slightly sharper glow
+      });
+
+      gsap.to(rayRef.current, {
+        opacity: 0.25,
+        duration: 4,
+        ease: 'power2.inOut'
+      });
+    } else {
+      gsap.to(lightRef.current, {
+        opacity: 0.4,
+        duration: 3,
+        ease: 'power2.inOut',
+        filter: 'blur(40px)'
+      });
+
+      gsap.to(rayRef.current, {
+        opacity: 0.15,
+        duration: 4,
+        ease: 'power2.inOut'
+      });
+    }
+
+  }, [isAwake]);
 
   useEffect(() => {
     if (!lightRef.current || !rayRef.current) return;
@@ -40,7 +76,7 @@ export default function Lighting() {
       {/* Volumetric Light Source (Top Right) */}
       <div 
         ref={lightRef}
-        className="absolute -top-[20%] -right-[10%] w-[1200px] h-[1200px] rounded-full pointer-events-none z-0 mix-blend-screen opacity-40"
+        className="absolute -top-[20%] -right-[10%] w-[1200px] h-[1200px] rounded-full pointer-events-none z-0 mix-blend-screen opacity-40 transition-colors"
         style={{
           background: 'radial-gradient(circle, #fcdba1 0%, rgba(181,137,83,0.4) 30%, transparent 70%)',
           filter: 'blur(40px)'

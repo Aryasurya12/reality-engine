@@ -1,10 +1,8 @@
-import HeroScene from "@/components/Scene1/HeroScene";
-import CustomCursor from "@/components/Scene1/CustomCursor";
+import HeroScene from "@/components/Scene1/Core/HeroScene";
 
 export default function Home() {
   return (
-    <main className="relative w-full h-screen bg-[var(--color-workshop-bg)] text-workshop-brass overflow-hidden">
-      <CustomCursor />
+    <main className="w-full h-screen overflow-hidden bg-[#050403]">
       <HeroScene />
     </main>
   );

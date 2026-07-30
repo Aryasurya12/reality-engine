@@ -2,20 +2,23 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useWorkshopStore } from '@/store/useWorkshopStore';
 
 export default function DustParticles() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isAwake } = useWorkshopStore();
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const particleCount = 60;
     const container = containerRef.current;
+    container.innerHTML = '';
     
     // Create particles
     for (let i = 0; i < particleCount; i++) {
       const particle = document.createElement('div');
-      particle.className = 'absolute rounded-full pointer-events-none mix-blend-screen';
+      particle.className = 'absolute rounded-full pointer-events-none mix-blend-screen transition-opacity duration-1000';
       
       const size = Math.random() * 4 + 1;
       particle.style.width = `${size}px`;
@@ -32,14 +35,15 @@ export default function DustParticles() {
 
       // Animate drifting gently
       gsap.to(particle, {
-        x: `+=${Math.random() * 150 - 75}`,
-        y: `-=${Math.random() * 200 + 50}`,
-        opacity: Math.random() * 0.6 + 0.1,
-        duration: Math.random() * 15 + 15,
+        x: `+=${Math.random() * (isAwake ? 300 : 150) - (isAwake ? 150 : 75)}`,
+        y: `-=${Math.random() * (isAwake ? 300 : 200) + 50}`,
+        opacity: isAwake ? (Math.random() * 0.8 + 0.2) : (Math.random() * 0.4 + 0.1),
+        duration: Math.random() * (isAwake ? 10 : 15) + (isAwake ? 10 : 15), // Faster when awake
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut',
         delay: Math.random() * -30, // Start randomly scattered
+        overwrite: "auto"
       });
     }
 
@@ -58,11 +62,8 @@ export default function DustParticles() {
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (container) {
-        container.innerHTML = '';
-      }
     };
-  }, []);
+  }, [isAwake]);
 
   return (
     <div

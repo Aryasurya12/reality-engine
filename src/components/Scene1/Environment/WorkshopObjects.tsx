@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useWorkshopStore } from '@/store/useWorkshopStore';
 
 export default function WorkshopObjects() {
   const gear1Ref = useRef<SVGGElement>(null);
   const gear2Ref = useRef<SVGGElement>(null);
   const pendulumRef = useRef<SVGGElement>(null);
+  const { isAwake } = useWorkshopStore();
 
   useEffect(() => {
     // Interlocking gears rotation
@@ -14,41 +16,66 @@ export default function WorkshopObjects() {
       gsap.to(gear1Ref.current, {
         rotation: 360,
         transformOrigin: "center center",
-        duration: 20,
+        duration: isAwake ? 8 : 20, // Spin faster when awake
         repeat: -1,
-        ease: "none"
+        ease: "none",
+        overwrite: "auto"
       });
       
       gsap.to(gear2Ref.current, {
         rotation: -360,
         transformOrigin: "center center",
-        duration: 15, // Faster since it's smaller
+        duration: isAwake ? 6 : 15,
         repeat: -1,
-        ease: "none"
+        ease: "none",
+        overwrite: "auto"
       });
     }
 
     // Pendulum swing
     if (pendulumRef.current) {
-      gsap.fromTo(pendulumRef.current, 
-        { rotation: -15 },
-        {
-          rotation: 15,
-          transformOrigin: "top center",
-          duration: 2,
-          ease: "sine.inOut",
-          yoyo: true,
-          repeat: -1
-        }
-      );
+      gsap.to(pendulumRef.current, {
+        rotation: isAwake ? 25 : 10, // Wider swing when awake
+        transformOrigin: "top center",
+        duration: isAwake ? 1 : 2, // Faster swing
+        ease: "sine.inOut",
+        yoyo: true,
+        repeat: -1,
+        overwrite: "auto"
+      });
     }
-  }, []);
+  }, [isAwake]);
+
+  const handleGearHover = () => {
+    if (!gear1Ref.current || !gear2Ref.current) return;
+    gsap.to([gear1Ref.current, gear2Ref.current], {
+      scale: 1.05,
+      duration: 0.3,
+      ease: "back.out(2)",
+      yoyo: true,
+      repeat: 1
+    });
+  };
+
+  const handlePendulumHover = () => {
+    if (!pendulumRef.current) return;
+    gsap.to(pendulumRef.current, {
+      y: -5,
+      duration: 0.2,
+      ease: "power2.out",
+      yoyo: true,
+      repeat: 1
+    });
+  };
 
   return (
     <div className="absolute inset-0 pointer-events-none z-20">
       
       {/* Wall Clock & Pendulum (Top Left) */}
-      <div className="absolute top-[15%] left-[10%] w-32 h-64">
+      <div 
+        className="absolute top-[15%] left-[10%] w-32 h-64 pointer-events-auto cursor-pointer"
+        onMouseEnter={handlePendulumHover}
+      >
         <svg viewBox="0 0 100 200" className="w-full h-full text-[var(--color-workshop-brass)] drop-shadow-xl">
           {/* Clock Face */}
           <circle cx="50" cy="40" r="30" fill="var(--color-workshop-wood)" stroke="currentColor" strokeWidth="4" />
@@ -66,7 +93,10 @@ export default function WorkshopObjects() {
       </div>
 
       {/* Exposed Gears (Mid Right) */}
-      <div className="absolute top-[40%] right-[15%] w-48 h-48 opacity-40 mix-blend-screen">
+      <div 
+        className="absolute top-[40%] right-[15%] w-48 h-48 opacity-40 mix-blend-screen pointer-events-auto cursor-pointer"
+        onMouseEnter={handleGearHover}
+      >
         <svg viewBox="0 0 200 200" className="w-full h-full text-[var(--color-workshop-copper)] drop-shadow-2xl">
           <g ref={gear1Ref}>
             <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" strokeWidth="8" />

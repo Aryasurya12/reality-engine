@@ -27,11 +27,13 @@ export default function Blueprint() {
     if (!paper) return;
 
     const handleMouseEnter = () => {
-      gsap.to(paper, { y: -5, rotationZ: -2, duration: 0.5, ease: "power2.out" });
+      gsap.to(paper, { y: -10, rotationZ: -1, duration: 0.5, ease: "back.out(1.5)", scale: 1.02 });
+      if (cornerRef.current) gsap.to(cornerRef.current, { rotationX: -25, rotationY: -15, duration: 0.5 });
     };
     
     const handleMouseLeave = () => {
-      gsap.to(paper, { y: 0, rotationZ: 0, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+      gsap.to(paper, { y: 0, rotationZ: -3, duration: 0.8, ease: "elastic.out(1, 0.3)", scale: 1 });
+      if (cornerRef.current) gsap.to(cornerRef.current, { rotationX: -15, rotationY: -10, duration: 0.8 });
     };
 
     paper.addEventListener('mouseenter', handleMouseEnter);
@@ -46,7 +48,7 @@ export default function Blueprint() {
   return (
     <div 
       ref={paperRef}
-      className="absolute bottom-[10%] left-[20%] w-[300px] h-[200px] z-30 transform -rotate-3 transition-transform cursor-pointer"
+      className="absolute bottom-[10%] left-[20%] w-[300px] h-[200px] z-30 transform -rotate-3 transition-transform cursor-pointer pointer-events-auto"
       style={{ perspective: '800px' }}
     >
       <div className="relative w-full h-full bg-[#1e2a3b] border border-[#3b5374] shadow-2xl rounded-sm overflow-hidden p-4">
