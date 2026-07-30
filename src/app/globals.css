@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-workshop-bg: #0c0b0a;
+  --color-workshop-wood: #2c1a0e;
+  --color-workshop-brass: #b58953;
+  --color-workshop-copper: #c45b36;
+  --color-workshop-glow: rgba(235, 178, 111, 0.15);
+  
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+@layer base {
+  * {
+    cursor: none; /* Hide default cursor since we have a custom one */
+  }
+
+  body {
+    background-color: var(--color-workshop-bg);
+    color: var(--color-workshop-brass);
+    overflow-x: hidden;
+    /* Custom scrollbar hiding for Webkit */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* Lenis default styles */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 15px var(--color-workshop-glow);
+  }
+  
+  .bg-radial-glow {
+    background: radial-gradient(circle at center, var(--color-workshop-glow) 0%, transparent 70%);
+  }
+}
