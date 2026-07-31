@@ -108,3 +108,68 @@ export const stopWalkingCycle = (
   gsap.killTweensOf([robotRef.current, legLeftRef.current, legRightRef.current]);
   gsap.to([robotRef.current, legLeftRef.current, legRightRef.current], { y: 0, rotation: 0, duration: 0.3, ease: "power2.out" });
 };
+
+// --- Random Idle Behaviors ---
+
+export const playIdleScratchHead = (robotRef: RefObject<HTMLDivElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(robotRef.current, { rotation: 10, duration: 0.3, ease: "power1.inOut" })
+    .to(robotRef.current, { y: "-=5", duration: 0.1, yoyo: true, repeat: 3, ease: "sine.inOut" })
+    .to(robotRef.current, { rotation: 0, duration: 0.3, ease: "power1.inOut", delay: 0.2 });
+  return tl;
+};
+
+export const playIdleAdjustAntenna = (antennaRef: RefObject<SVGCircleElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(antennaRef.current, { opacity: 1, duration: 0.1, yoyo: true, repeat: 5 })
+    .to(antennaRef.current, { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1 }, "-=0.6");
+  return tl;
+};
+
+export const playIdleLookAround = (robotRef: RefObject<HTMLDivElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(robotRef.current, { rotation: -20, duration: 0.6, ease: "power2.inOut" })
+    .to(robotRef.current, { scaleY: 1.05, duration: 0.2, yoyo: true, repeat: 1 }, "-=0.3")
+    .to(robotRef.current, { rotation: 20, duration: 0.8, ease: "power2.inOut", delay: 0.5 })
+    .to(robotRef.current, { rotation: 0, duration: 0.4, ease: "power2.inOut", delay: 0.3 });
+  return tl;
+};
+
+export const playIdleTapFoot = (legRightRef: RefObject<SVGPathElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(legRightRef.current, { rotation: -15, duration: 0.1, yoyo: true, repeat: 5, ease: "sine.inOut" });
+  return tl;
+};
+
+export const playIdleYawn = (chestRef: RefObject<SVGRectElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(chestRef.current, { scaleY: 1.2, duration: 1, ease: "power2.out" })
+    .to(chestRef.current, { scaleY: 1, duration: 0.4, ease: "bounce.out" });
+  return tl;
+};
+
+export const playIdleSpin = (robotRef: RefObject<HTMLDivElement | null>) => {
+  const tl = gsap.timeline();
+  tl.to(robotRef.current, { rotationY: 360, duration: 1, ease: "power2.inOut" });
+  // Ensure we reset it immediately after so subsequent transforms don't get weird
+  tl.set(robotRef.current, { rotationY: 0 });
+  return tl;
+};
+
+export const getRandomIdleAnimation = (
+  robotRef: RefObject<HTMLDivElement | null>,
+  antennaRef: RefObject<SVGCircleElement | null>,
+  chestRef: RefObject<SVGRectElement | null>,
+  legRightRef: RefObject<SVGPathElement | null>
+) => {
+  const animations = [
+    () => playIdleScratchHead(robotRef),
+    () => playIdleAdjustAntenna(antennaRef),
+    () => playIdleLookAround(robotRef),
+    () => playIdleTapFoot(legRightRef),
+    () => playIdleYawn(chestRef),
+    () => playIdleSpin(robotRef),
+  ];
+  const randomIndex = Math.floor(Math.random() * animations.length);
+  return animations[randomIndex]();
+};

@@ -12,28 +12,46 @@ import gsap from 'gsap';
 
 export default function HeroScene() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { storyPhase } = useWorkshopStore();
+  const scrollProgressRef = useRef(0);
+  const { storyPhase, setStoryPhase } = useWorkshopStore();
 
   useEffect(() => {
     if (!containerRef.current) return;
     
-    // Simulate camera dolly when guiding begins
-    if (storyPhase === 'guiding') {
-      gsap.to(containerRef.current, {
-        scale: 1.05,
-        x: -50,
-        y: 10,
-        duration: 8,
-        ease: "sine.inOut"
-      });
-    } else if (storyPhase === 'waiting_at_door') {
-      gsap.to(containerRef.current, {
-        scale: 1.1,
-        x: -100,
-        duration: 6,
-        ease: "power2.inOut"
-      });
-    }
+    // Simulate camera dolly based on scroll progress once guiding begins
+    const handleWheel = (e: WheelEvent) => {
+      if (storyPhase === 'guiding' || storyPhase === 'waiting_at_door') {
+        // Increment progress very quickly, regardless of scroll direction
+        const scrollAmount = Math.max(1, Math.abs(e.deltaY) * 0.5);
+        const newProgress = Math.min(100, scrollProgressRef.current + scrollAmount);
+        
+        scrollProgressRef.current = newProgress;
+        useWorkshopStore.getState().setScrollProgress(newProgress);
+        
+        if (newProgress >= 100 && storyPhase !== 'waiting_at_door') {
+          setStoryPhase('waiting_at_door');
+        }
+
+        // Map progress to camera properties
+        const scale = 1 + (scrollProgressRef.current * 0.002); // 1 to 1.2
+        const xOffset = scrollProgressRef.current * -1.5; // 0 to -150
+        const yOffset = scrollProgressRef.current * 0.2; // 0 to 20
+        
+        gsap.to(containerRef.current, {
+          scale,
+          x: xOffset,
+          y: yOffset,
+          duration: 0.5,
+          ease: "power2.out"
+        });
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel);
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+    };
   }, [storyPhase]);
 
   return (

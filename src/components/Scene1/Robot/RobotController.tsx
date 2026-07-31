@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Robot from './Robot';
 import { setupEyeTracking } from './EyeTracking';
-import { playWakeUpSequence, playStartledAnimation, playDiscoverySequence, startWalkingCycle, stopWalkingCycle, playPointSequence } from './RobotAnimations';
+import { playWakeUpSequence, playStartledAnimation, playDiscoverySequence, startWalkingCycle, stopWalkingCycle, playPointSequence, getRandomIdleAnimation, playWaveAnimation } from './RobotAnimations';
 import gsap from 'gsap';
 import { useWorkshopStore } from '@/store/useWorkshopStore';
 import { sounds, unlockAudio } from '../Core/AudioController';
@@ -26,7 +26,7 @@ export default function RobotController() {
   const lastPosRef = useRef({ x: 0, y: 0 });
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { wakeUp, setStoryPhase, storyPhase } = useWorkshopStore();
+  const { isAwake, storyPhase, scrollProgress, wakeUp, setStoryPhase } = useWorkshopStore();
 
   useEffect(() => {
     // Initial Setup
@@ -58,7 +58,7 @@ export default function RobotController() {
             // Trigger Discovery sequence shortly after waking up
             setTimeout(() => {
               setRobotState('discovering');
-              setStoryPhase('discovery');
+              setStoryPhase('curious');
               sounds.gearClick.play();
               playDiscoverySequence(robotRef, () => {
                 setRobotState('guiding');
@@ -97,15 +97,20 @@ export default function RobotController() {
           }
         }
 
-        // Reset idle timer
+        // Random Idle Behavior Engine
         if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
         idleTimerRef.current = setTimeout(() => {
-          if (storyPhase === 'guiding' && robotState === 'waiting') {
-             // Encourage user to follow
-             playPointSequence(robotRef);
-             sounds.servo.play();
+          if (robotState === 'idle' || robotState === 'waiting') {
+             // Occasionally trigger random idle behavior
+             if (Math.random() > 0.5) {
+               getRandomIdleAnimation(robotRef, antennaRef, chestRef, legRightRef);
+             } else if (storyPhase === 'guiding' && robotState === 'waiting') {
+               // Encourage user to follow
+               playPointSequence(robotRef);
+               sounds.servo.play();
+             }
           }
-        }, 8000);
+        }, 4000 + Math.random() * 4000); // Random interval between 4s and 8s
       }
     };
 
@@ -126,43 +131,32 @@ export default function RobotController() {
     };
   }, [robotState, storyPhase, wakeUp, setStoryPhase]);
 
-  // Handle Walking cycle based on Guiding state
+  // Handle Robot Follow System (Scroll Tracking)
   useEffect(() => {
-    let walkTween: any = null;
-    let moveTween: any = null;
-    
-    if (robotState === 'guiding') {
-       walkTween = startWalkingCycle(robotRef, legLeftRef, legRightRef);
-       
-       // Move deeper into the background (scale down, move left/right)
-       moveTween = gsap.to(robotRef.current, {
-         x: "+=20",
-         scale: "-=0.01",
-         duration: 1,
-         ease: "none",
-         repeat: -1,
-         onRepeat: () => {
-           // Simulate footstep sound occasionally
-           if (Math.random() > 0.5) sounds.footstep.play();
-           
-           // If we've walked far enough, reach the door
-           const currentX = gsap.getProperty(robotRef.current, "x") as number;
-           if (currentX > 300) {
-             setRobotState('idle');
-             setStoryPhase('waiting_at_door');
-           }
-         }
-       });
-    } else {
-       stopWalkingCycle(robotRef, legLeftRef, legRightRef);
-       if (moveTween) moveTween.kill();
+    if (storyPhase === 'guiding' || storyPhase === 'waiting_at_door') {
+      if (!robotRef.current) return;
+      
+      // Base guiding X is 50, map progress (0-100) to additional X (up to 400)
+      const targetX = 50 + (scrollProgress * 4); 
+      
+      // Move robot smoothly to new X
+      gsap.to(robotRef.current, {
+        x: targetX,
+        duration: 0.8,
+        ease: "power2.out",
+        onStart: () => {
+          if (robotState !== 'guiding') {
+            setRobotState('guiding');
+            startWalkingCycle(robotRef, legLeftRef, legRightRef);
+          }
+        },
+        onComplete: () => {
+          setRobotState('waiting');
+          stopWalkingCycle(robotRef, legLeftRef, legRightRef);
+        }
+      });
     }
-
-    return () => {
-       if (walkTween) walkTween.kill();
-       if (moveTween) moveTween.kill();
-    };
-  }, [robotState, setStoryPhase]);
+  }, [scrollProgress, storyPhase, setStoryPhase]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-40 pointer-events-none">

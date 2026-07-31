@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useWorkshopStore } from '@/store/useWorkshopStore';
+import { useGlobalState } from '@/store/useGlobalState';
+import MechanicalCrank from '../Interactables/MechanicalCrank';
 
 export default function WorkshopBackground() {
   const bgRef = useRef<HTMLDivElement>(null);
@@ -14,6 +16,7 @@ export default function WorkshopBackground() {
   const doorGearRef = useRef<SVGCircleElement>(null);
   
   const { isAwake, storyPhase } = useWorkshopStore();
+  const { transitionToScene } = useGlobalState();
 
   useEffect(() => {
     // Subtle background parallax
@@ -78,7 +81,7 @@ export default function WorkshopBackground() {
 
   // Story Phase specific animations
   useEffect(() => {
-    if (storyPhase === 'discovery' && doorGlowRef.current && doorGearRef.current) {
+    if (storyPhase === 'curious' && doorGlowRef.current && doorGearRef.current) {
       // The mysterious machine briefly comes to life
       const tl = gsap.timeline();
       
@@ -105,35 +108,41 @@ export default function WorkshopBackground() {
   return (
     <div ref={bgRef} className="absolute inset-[-5%] w-[110%] h-[110%] z-10 pointer-events-none flex flex-col justify-between">
       
-      {/* Heavy Workshop Door (Right side, deep in background) */}
-      <div className="absolute top-[20%] right-[10%] w-64 h-96 opacity-40">
+      <div className="absolute top-[20%] right-[10%] w-64 h-96 opacity-40 group">
         <svg viewBox="0 0 200 300" className="w-full h-full drop-shadow-2xl">
           {/* Door Frame */}
           <rect x="10" y="10" width="180" height="290" fill="#050403" stroke="var(--color-workshop-brass)" strokeWidth="4" />
           {/* Giant mechanical door panels */}
-          <rect x="20" y="20" width="160" height="280" fill="#0c0b0a" />
+          <rect x="20" y="20" width="160" height="280" fill="#0c0b0a" className="transition-colors duration-500 group-hover:fill-[#1a130f]" />
           <line x1="20" y1="100" x2="180" y2="100" stroke="var(--color-workshop-brass)" strokeWidth="2" opacity="0.3" />
           <line x1="20" y1="200" x2="180" y2="200" stroke="var(--color-workshop-brass)" strokeWidth="2" opacity="0.3" />
-          <circle cx="100" cy="150" r="30" fill="none" stroke="var(--color-workshop-copper)" strokeWidth="8" opacity="0.4" />
+          <circle cx="100" cy="150" r="30" fill="none" stroke="var(--color-workshop-copper)" strokeWidth="8" opacity="0.4" className="group-hover:stroke-[#fcdba1] transition-colors duration-500" />
           
           {/* The single mysterious gear */}
-          <g ref={doorGearRef as any} style={{ transformOrigin: "100px 150px" }}>
+          <g ref={doorGearRef as any} style={{ transformOrigin: "100px 150px" }} className="group-hover:animate-spin">
              <circle cx="100" cy="150" r="15" fill="none" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
              <line x1="85" y1="150" x2="115" y2="150" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
              <line x1="100" y1="135" x2="100" y2="165" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
           </g>
 
           {/* Heavy Handle */}
-          <rect x="150" y="140" width="10" height="40" rx="3" fill="var(--color-workshop-wood)" stroke="var(--color-workshop-brass)" strokeWidth="1" />
+          <rect x="150" y="140" width="10" height="40" rx="3" fill="var(--color-workshop-wood)" stroke="var(--color-workshop-brass)" strokeWidth="1" className="group-hover:translate-x-1 group-hover:-rotate-12 transition-transform duration-300 transform-origin-bottom" />
         </svg>
 
         {/* Orange Volumetric Glow escaping from under the door */}
         <div 
           ref={doorGlowRef}
-          className="absolute bottom-0 left-0 w-full h-8 bg-orange-500 opacity-0 mix-blend-screen"
+          className="absolute bottom-0 left-0 w-full h-8 bg-orange-500 opacity-20 mix-blend-screen transition-opacity duration-500"
           style={{ filter: 'blur(15px)' }}
         />
       </div>
+
+      {/* The Mechanical Crank (Appears when robot reaches door) */}
+      {storyPhase === 'waiting_at_door' && (
+         <div className="pointer-events-auto absolute inset-0 z-[100]">
+            <MechanicalCrank />
+         </div>
+      )}
 
       {/* Hanging Lamp (Top Center) */}
       <div className="absolute top-0 left-1/3 w-32 flex flex-col items-center">
