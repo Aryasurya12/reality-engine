@@ -1,14 +1,71 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { useGlobalState } from '@/store/useGlobalState';
+import { useCursorStore } from '@/store/useCursorStore';
 
 export default function RobotExplorer() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { repairPhase } = useGlobalState();
+  const { setCursorState } = useCursorStore();
+
+  useEffect(() => {
+    if (repairPhase === 'ready_to_repair') {
+      const container = containerRef.current;
+      if (!container) return;
+
+      // 1. Initial Guidance Sequence (Rule of Three)
+      const guideTl = gsap.timeline({ repeat: -1, repeatDelay: 3 });
+      
+      guideTl
+        .to('.robot-head', { rotation: -30, duration: 0.5 }) // Look at fallen gear
+        .to('.robot-head', { rotation: 20, duration: 0.5 }, "+=1") // Look at socket
+        .to('.robot-head', { rotation: 0, duration: 0.3 }, "+=1") // Look at user
+        .to('.robot-arm-left', { rotation: -120, yoyo: true, repeat: 3, duration: 0.2 }, "+=0.2"); // Wave to user
+
+      // 2. Idle Timer (15 seconds)
+      const idleTimer = setTimeout(() => {
+        // If still not repaired, take action
+        guideTl.kill(); // Stop waving
+        
+        const walkTl = gsap.timeline();
+        walkTl
+          .to(container, { x: 350, y: 150, duration: 3, ease: 'power1.inOut' }) // Walk to gear
+          .to('.robot-head', { rotation: 40, duration: 0.5 }) // Look down
+          .to('.robot-arm-right', { rotation: -90, duration: 0.5 }) // Point at it
+          .to('.robot-head', { rotation: -30, duration: 0.5 }, "+=1") // Look back at user pleadingly
+          .to('.robot-arm-left', { rotation: -130, yoyo: true, repeat: -1, duration: 0.3 }, "+=0.5"); // Frantic wave
+          
+      }, 15000);
+
+      return () => {
+        guideTl.kill();
+        clearTimeout(idleTimer);
+      };
+    } else if (repairPhase === 'repaired') {
+      gsap.killTweensOf('.robot-head');
+      gsap.killTweensOf('.robot-arm-left');
+      gsap.killTweensOf('.robot-arm-right');
+      
+      const successTl = gsap.timeline();
+      successTl
+        .to('.robot-head', { rotation: 0, duration: 0.3 })
+        .to('.robot-arm-left', { rotation: -160, duration: 0.2 })
+        .to('.robot-arm-right', { rotation: -160, duration: 0.2 })
+        .to('.robot-container', { y: "-=20", yoyo: true, repeat: 3, duration: 0.15 }); // Jump for joy
+    }
+  }, [repairPhase]);
+
   return (
-    <div className="robot-container absolute bottom-[20%] left-[20%] z-[25] pointer-events-auto">
+    <div ref={containerRef} className="robot-container absolute bottom-[20%] left-[20%] z-[25] pointer-events-auto">
       <motion.svg 
         viewBox="0 0 200 300" 
-        className="w-32 h-48 drop-shadow-2xl cursor-pointer"
+        className="w-32 h-48 drop-shadow-2xl cursor-none"
         whileHover={{ scale: 1.05 }}
+        onMouseEnter={() => setCursorState('hover-robot')}
+        onMouseLeave={() => setCursorState('default')}
       >
         {/* Antenna */}
         <line className="robot-antenna" x1="100" y1="20" x2="100" y2="50" stroke="var(--color-workshop-copper)" strokeWidth="4" />

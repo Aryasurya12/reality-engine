@@ -1,41 +1,40 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGlobalState } from '@/store/useGlobalState';
-import LaboratoryBackground from '../Environment/LaboratoryBackground';
+import CinematicBackground from '../Environment/CinematicBackground';
+import CinematicForeground from '../Environment/CinematicForeground';
 import TheGreatEngine from '../Machine/TheGreatEngine';
-import LaboratoryForeground from '../Environment/LaboratoryForeground';
-import RobotExplorer from '../Robot/RobotExplorer';
-import GearPuzzle from '../../Scene3/Puzzles/GearPuzzle';
-import { sounds } from '../../Scene1/Core/AudioController';
+import CinematicRobot from '../Robot/CinematicRobot';
+import FallenGear from './FallenGear';
+import { sounds, safePlay } from '../../Scene1/Core/AudioController';
+import { useGlobalState } from '@/store/useGlobalState';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function MachineRoom() {
+  const { setRepairPhase } = useGlobalState();
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollTrackRef = useRef<HTMLDivElement>(null);
   
+  // Layers
+  const cameraRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const midRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<HTMLDivElement>(null);
-  const cameraRef = useRef<HTMLDivElement>(null);
-
-  const { repairPhase, setRepairPhase } = useGlobalState();
+  const robotRef = useRef<HTMLDivElement>(null);
+  const engineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Ambient sound for the room
-    const playAmbient = () => {
-      sounds.ambientHum.loop = true;
-      sounds.ambientHum.volume = 0.3;
-      sounds.ambientHum.play();
-    };
-    playAmbient();
-
-    return () => {
-      sounds.ambientHum.pause();
-    };
+    // Play ambient audio when entering the room
+    const ambientId = setInterval(() => {
+      // Simulate random steam hits and metal expansions occasionally
+      if (Math.random() > 0.8) safePlay(sounds.steamHiss);
+      if (Math.random() > 0.9) safePlay(sounds.metalExpansion);
+    }, 5000);
+    
+    return () => clearInterval(ambientId);
   }, []);
 
   useEffect(() => {
@@ -43,121 +42,160 @@ export default function MachineRoom() {
     if (!track) return;
 
     let ctx = gsap.context(() => {
-      // Pin the camera container to the viewport while scrolling the track
+      // Pin the camera
       ScrollTrigger.create({
         trigger: track,
         start: "top top",
         end: "bottom bottom",
         pin: cameraRef.current,
-        scrub: true,
+        scrub: 1,
       });
 
-      // The Master Cinematic Timeline (0 to 10 scale for easier math)
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: track,
           start: "top top",
           end: "bottom bottom",
-          scrub: 1, // Smooth scrub
+          scrub: 1,
           onLeave: () => {
-             // Unlock puzzle interaction at the very end
-             if (useGlobalState.getState().repairPhase === 'idle') {
-               setRepairPhase('ready_to_repair');
-             }
+            // Unlock puzzle interaction at the very end
+            if (useGlobalState.getState().repairPhase === 'idle') {
+              setRepairPhase('ready_to_repair');
+            }
           }
         }
       });
 
-      // 0-15% (0-1.5): The Discovery & Investigation
-      // Robot explores initially, then freezes and looks back.
-      tl.fromTo(".robot-container", { x: -300, y: 0, scale: 1 }, { x: 200, duration: 0.5 }, 0)
-        .to(".robot-head", { rotation: -20, duration: 0.5 }, 0.5) // Look back at user
-        .to(".robot-container", { x: 300, duration: 0.5 }, 1.0) // Approaches machine
-        .to(".robot-arm-right", { rotation: -60, duration: 0.2 }, 1.3) // Touch panel
-        .to(".robot-arm-right", { rotation: 0, duration: 0.2 }, 1.5) // Nothing happens
-        .to(".robot-head", { rotation: 45, duration: 0.3 }, 1.6) // Disappointment
-        .to(".robot-head", { rotation: -20, duration: 0.3 }, 1.9) // Look back at user
-        .to(".robot-arm-left", { rotation: -90, yoyo: true, repeat: 1, duration: 0.4 }, 2.2); // "Come" gesture
+      // INITIAL STATE SETUP (Before scrolling)
+      gsap.set(bgRef.current, { scale: 1.1 });
+      gsap.set(midRef.current, { scale: 1.0 });
+      gsap.set(fgRef.current, { scale: 1.5, y: 300, x: -300, opacity: 0 }); // Offscreen initially
+      
+      // Robot starts way offscreen left
+      gsap.set(robotRef.current, { x: -500, scale: 0.8 });
 
-      // 30% - 80% (3.0 - 8.0): The Follow System (Camera Dolly In)
-      // Robot leads the way deep into the scene
-      tl.to(".robot-container", { x: 500, scale: 0.8, y: -50, duration: 5, ease: "none" }, 3);
-      // Dolly in effect
-      tl.to(bgRef.current, { scale: 1.2, duration: 5, ease: "none" }, 3);
-      tl.to(midRef.current, { scale: 1.4, y: 100, duration: 5, ease: "none" }, 3);
-      // Foreground flies past the camera (creates extreme depth)
-      tl.to(fgRef.current, { scale: 3, y: 500, x: -300, opacity: 0, duration: 5, ease: "power1.in" }, 3);
-      // Robot occasionally looks back to check if following
-      tl.to(".robot-head", { rotation: -30, duration: 0.5, yoyo: true, repeat: 1 }, 4.5);
-      tl.to(".robot-head", { rotation: -30, duration: 0.5, yoyo: true, repeat: 1 }, 6.5);
+      // 0% - 20%: The Entrance (Camera pushes in, Foreground flies past)
+      tl.to(bgRef.current, { scale: 1.2, duration: 2, ease: "power1.inOut" }, 0)
+        .to(midRef.current, { scale: 1.05, duration: 2, ease: "power1.inOut" }, 0)
+        .to(fgRef.current, { scale: 1.1, y: 0, x: 0, opacity: 1, duration: 2, ease: "power2.out" }, 0)
+        // Robot walks in with weight (bobbing)
+        .to(robotRef.current, { x: -100, duration: 2, ease: "power1.inOut" }, 0)
+        .to(robotRef.current, { y: -20, yoyo: true, repeat: 5, duration: 0.33, ease: "sine.inOut" }, 0); // Walk cycle bob
 
-      // 80% - 95% (8.0 - 9.5): The Failure
-      tl.to(".robot-arm-right", { rotation: -120, duration: 0.3 }, 8.0) // Reach high panel
-      .to(".robot-arm-right", { rotation: 0, duration: 0.3 }, 8.3)
-      // Violent shake
-      .to(midRef.current, { x: "+=10", y: "+=10", yoyo: true, repeat: 5, duration: 0.1 }, 8.4)
-      .to(".robot-head", { rotation: 20, duration: 0.5 }, 8.8) // Looks at fallen gear
-      .to(".robot-head", { rotation: -40, duration: 0.5 }, 9.2); // Looks back at user with hope
+      // 20% - 40%: The Approach (Camera slowly dollies right following the robot)
+      tl.to(bgRef.current, { x: -50, duration: 2, ease: "none" }, 2)
+        .to(midRef.current, { x: -100, duration: 2, ease: "none" }, 2)
+        .to(fgRef.current, { x: -200, duration: 2, ease: "none" }, 2)
+        // Robot keeps walking
+        .to(robotRef.current, { x: 300, duration: 2, ease: "power1.inOut" }, 2)
+        .to(robotRef.current, { y: -20, yoyo: true, repeat: 5, duration: 0.33, ease: "sine.inOut" }, 2)
+        // Look up at the machine in awe
+        .to(".cinematic-robot-head", { rotation: -15, duration: 0.5 }, 3.5);
+
+      // 40% - 60%: The Touch
+      tl.to(".cinematic-robot-arm-right", { rotation: -80, duration: 0.5, ease: "back.out(1.5)" }, 4.0) // Reach out
+        // The machine hums to life!
+        .to(".cinematic-status-light", { opacity: 0.9, filter: "blur(5px)", duration: 0.2 }, 4.5)
+        .to(".cinematic-gauge-needle", { rotation: 120, duration: 1, ease: "elastic.out(1, 0.3)" }, 4.5)
+        // Piston fires once
+        .to(".piston-shaft", { y: 60, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.in" }, 4.8)
+        // Flywheel spins 10 degrees with immense weight (anticipation -> overshoot)
+        .to(".cinematic-engine-flywheel", { rotation: -2, duration: 0.3, ease: "power1.in" }, 4.5) // Anticipate backward
+        .to(".cinematic-engine-flywheel", { rotation: 15, duration: 0.8, ease: "back.out(1.2)" }, 4.8); // Slam forward
+
+      // 60% - 80%: The Failure
+      // Heavy, violent shake across all layers (camera shake)
+      tl.to(bgRef.current, { x: "+=10", y: "+=5", yoyo: true, repeat: 5, duration: 0.05 }, 5.5)
+        .to(midRef.current, { x: "-=15", y: "+=15", yoyo: true, repeat: 5, duration: 0.05 }, 5.5)
+        .to(fgRef.current, { x: "+=20", y: "-=10", yoyo: true, repeat: 5, duration: 0.05 }, 5.5)
+        // Robot recoils
+        .to(robotRef.current, { x: "-=50", duration: 0.2, ease: "power2.out" }, 5.5)
+        .to(".cinematic-robot-arm-right", { rotation: 0, duration: 0.2 }, 5.5)
+        .to(".cinematic-robot-head", { rotation: 20, duration: 0.2 }, 5.5) // Flinch
+        // Power dies (Lights dim, needles drop)
+        .to(".cinematic-status-light", { opacity: 0.1, filter: "blur(0px)", duration: 0.1 }, 5.8)
+        .to(".cinematic-gauge-needle", { rotation: 0, duration: 0.5, ease: "bounce.out" }, 5.8)
+        .to(".cinematic-engine-core", { opacity: 0.2, duration: 0.5 }, 5.8)
+        // GEAR FALLS OFF MACHINE
+        .to(".falling-gear-dummy", { y: "+=600", rotation: -120, duration: 0.6, ease: "bounce.out" }, 5.6);
+
+      // 80% - 100%: The Plea
+      // Camera slowly settles
+      tl.to(bgRef.current, { scale: 1.15, duration: 2, ease: "power2.out" }, 8.0)
+        .to(midRef.current, { scale: 1.02, duration: 2, ease: "power2.out" }, 8.0)
+        .to(fgRef.current, { scale: 1.05, duration: 2, ease: "power2.out" }, 8.0)
+        // Robot slowly lowers head in defeat
+        .to(".cinematic-robot-head", { rotation: 30, duration: 1, ease: "power1.inOut" }, 8.0)
+        // Pause...
+        // Slowly turns head to look directly at the user (camera)
+        .to(".cinematic-robot-head", { rotation: -20, duration: 0.8, ease: "power2.inOut" }, 9.2);
 
     }, scrollTrackRef);
 
     return () => ctx.revert();
-  }, [setRepairPhase]);
+  }, []);
 
-  // Mouse Parallax (Still runs independently of scroll)
+  // Handheld Camera Breathing Effect (Mouse Parallax + Drift)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (repairPhase !== 'idle') return; // Disable parallax during puzzle
+    // Subtle breathing drift (like a human holding the camera)
+    gsap.to(cameraRef.current, {
+      scale: 1.01,
+      rotation: 0.2,
+      y: 5,
+      x: 3,
+      duration: 4,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
 
+    const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const x = (e.clientX / innerWidth - 0.5) * 2;
       const y = (e.clientY / innerHeight - 0.5) * 2;
 
-      gsap.to(bgRef.current, { x: x * 10, y: y * 10, duration: 1, ease: "power2.out", overwrite: "auto" });
-      gsap.to(midRef.current, { x: x * -20, y: y * -20, duration: 1, ease: "power2.out", overwrite: "auto" });
-      gsap.to(fgRef.current, { x: x * -60, y: y * -60, duration: 1, ease: "power2.out", overwrite: "auto" });
+      // Parallax depths
+      gsap.to(bgRef.current, { x: x * 20, y: y * 20, duration: 2, ease: "power2.out", overwrite: "auto" });
+      gsap.to(midRef.current, { x: x * -10, y: y * -10, duration: 2, ease: "power2.out", overwrite: "auto" });
+      gsap.to(fgRef.current, { x: x * -40, y: y * -40, duration: 2, ease: "power2.out", overwrite: "auto" });
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [repairPhase]);
+  }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full bg-[#060403] cursor-default selection:bg-transparent">
+    <div ref={containerRef} className="relative w-full bg-[#030508] cursor-none selection:bg-transparent overflow-hidden">
       
-      {/* Scroll Track (creates the page length needed for ScrollTrigger) */}
-      <div ref={scrollTrackRef} className="h-[400vh] w-full relative">
+      {/* Scroll Track: 500vh to give the animation plenty of room to breathe */}
+      <div ref={scrollTrackRef} className="h-[500vh] w-full relative">
         
-        {/* Pinned Camera Viewport */}
+        {/* Pinned Cinematic Viewport */}
         <div ref={cameraRef} className="h-screen w-full overflow-hidden absolute top-0 left-0">
           
-          {/* Layer 1: Background */}
-          <div ref={bgRef} className="absolute inset-0 w-full h-full scale-[1.05] origin-center">
-            <LaboratoryBackground />
+          {/* BACKGROUND LAYER */}
+          <div ref={bgRef} className="absolute inset-0 w-full h-full origin-center layer-base">
+            <CinematicBackground />
           </div>
 
-          {/* Layer 2: Midground (The Great Engine) */}
-          <div ref={midRef} className="absolute inset-0 w-full h-full scale-[1.05] origin-bottom">
-            <TheGreatEngine />
+          {/* MIDGROUND LAYER (The Great Engine) */}
+          <div ref={midRef} className="absolute inset-0 w-full h-full origin-bottom layer-base z-20 flex items-center justify-center">
+            <TheGreatEngine ref={engineRef} />
+            
+            {/* The Robot */}
+            <CinematicRobot ref={robotRef} />
+
+            {/* The Fallen Gear Interaction */}
+            <FallenGear />
           </div>
 
-          {/* Layer 2.5: The Robot Explorer */}
-          <RobotExplorer />
-
-          {/* Layer 3: Foreground (Workbench) */}
-          <div ref={fgRef} className="absolute inset-0 w-full h-full scale-[1.1] origin-bottom-left">
-            <LaboratoryForeground />
+          {/* FOREGROUND LAYER (Extreme Depth & Blur) */}
+          <div ref={fgRef} className="absolute inset-0 w-full h-full origin-bottom-left layer-base z-50">
+            <CinematicForeground />
           </div>
-          
-          {/* Layer 4: The Puzzle (Only visible at the end of the timeline) */}
-          {repairPhase !== 'idle' && (
-             <div className="absolute inset-0 z-50 pointer-events-auto flex items-center justify-center">
-                <GearPuzzle />
-             </div>
-          )}
 
         </div>
       </div>

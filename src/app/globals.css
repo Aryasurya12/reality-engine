@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-workshop-bg: #0c0b0a;
+  --color-workshop-bg: #0a0806;
   --color-workshop-wood: #2c1a0e;
   --color-workshop-brass: #b58953;
   --color-workshop-copper: #c45b36;
-  --color-workshop-glow: rgba(235, 178, 111, 0.15);
+  --color-workshop-stone: #1a1410;
+  --color-workshop-glow: rgba(235, 178, 111, 0.18);
+  --color-workshop-amber: #fcdba1;
   
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
@@ -13,22 +15,27 @@
 
 @layer base {
   * {
-    cursor: none; /* Hide default cursor since we have a custom one */
+    cursor: none;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     background-color: var(--color-workshop-bg);
     color: var(--color-workshop-brass);
     overflow-x: hidden;
-    /* Custom scrollbar hiding for Webkit */
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    /* Scrollbar hiding */
+    &::-webkit-scrollbar { display: none; }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  /* Lenis default styles */
+  /* Lenis default styles — critical for smooth scroll */
   html.lenis,
   html.lenis body {
     height: auto;
@@ -51,12 +58,168 @@
   }
 }
 
+/* ─── Keyframe Animations ───────────────────────────────────────────────── */
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-slow-reverse {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33%       { transform: translateY(-12px) translateX(4px); }
+  66%       { transform: translateY(-6px) translateX(-4px); }
+}
+
+@keyframes ember-rise {
+  0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(-120px) scale(0.3); opacity: 0; }
+}
+
+@keyframes lamp-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50%       { transform: rotate(2deg); }
+}
+
+@keyframes clock-tick {
+  0%, 49% { transform: rotate(-8deg); }
+  50%, 100% { transform: rotate(8deg); }
+}
+
+@keyframes door-glow-pulse {
+  0%, 100% { opacity: 0.15; filter: blur(20px); }
+  50%       { opacity: 0.35; filter: blur(15px); }
+}
+
+@keyframes shimmer-text {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes bolt-engage {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(2px); }
+  60%  { transform: translateX(-2px); }
+  80%  { transform: translateX(1px); }
+  100% { transform: translateX(-8px); }
+}
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50%       { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes antenna-pulse {
+  0%, 100% { opacity: 0.15; r: 3; }
+  50%       { opacity: 0.9; r: 5; }
+}
+
+@keyframes particle-drift {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.6; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+}
+
+/* ─── Utility Classes ────────────────────────────────────────────────────── */
+
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 15px var(--color-workshop-glow);
+    text-shadow: 0 0 20px rgba(181, 137, 83, 0.4), 0 0 60px rgba(181, 137, 83, 0.15);
   }
-  
+
+  .text-glow-strong {
+    text-shadow: 0 0 10px rgba(252, 219, 161, 0.6), 0 0 30px rgba(181, 137, 83, 0.4);
+  }
+
   .bg-radial-glow {
     background: radial-gradient(circle at center, var(--color-workshop-glow) 0%, transparent 70%);
+  }
+
+  /* GPU layer promotion — use on animated elements */
+  .gpu-layer {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Spin animations — uses transform (GPU) not layout */
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-spin-slow-reverse {
+    animation: spin-slow-reverse 15s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-float {
+    animation: float-gentle 4s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-lamp-sway {
+    animation: lamp-sway 4s ease-in-out infinite;
+    transform-origin: top center;
+    will-change: transform;
+  }
+
+  .animate-scroll-bounce {
+    animation: scroll-bounce 2s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .animate-door-glow {
+    animation: door-glow-pulse 3s ease-in-out infinite;
+    will-change: opacity, filter;
+  }
+
+  /* Shimmer text effect */
+  .text-shimmer {
+    background: linear-gradient(
+      90deg,
+      #b58953 0%,
+      #fcdba1 40%,
+      #e8c07a 50%,
+      #fcdba1 60%,
+      #b58953 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-text 4s linear infinite;
+  }
+
+  /* Clip path for transition */
+  .clip-door-open {
+    clip-path: inset(0 40% 0 40%);
+  }
+
+  /* Prevent layout thrash on absolute positioned animated layers */
+  .layer-base {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
