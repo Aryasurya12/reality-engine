@@ -1,134 +1,43 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import Robot from '../../Scene1/Robot/Robot';
-import { setupEyeTracking } from '../../Scene1/Robot/EyeTracking';
-import { startWalkingCycle, stopWalkingCycle, playPointSequence } from '../../Scene1/Robot/RobotAnimations';
-import gsap from 'gsap';
-import { useMachineStore } from '@/store/useMachineStore';
-import { sounds } from '../../Scene1/Core/AudioController';
+import { motion } from 'framer-motion';
 
 export default function RobotExplorer() {
-  const robotRef = useRef<HTMLDivElement>(null);
-  const headRef = useRef<SVGRectElement>(null);
-  const chestRef = useRef<SVGRectElement>(null);
-  const eyesRef = useRef<SVGGElement>(null);
-  const antennaRef = useRef<SVGCircleElement>(null);
-  const legLeftRef = useRef<SVGPathElement>(null);
-  const legRightRef = useRef<SVGPathElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const { explorationPhase } = useMachineStore();
-
-  useEffect(() => {
-    // Eye Tracking Hook
-    const cleanupEyeTracking = setupEyeTracking({
-      eyesRef,
-      headRef,
-      containerRef,
-      isSleeping: false
-    });
-
-    return cleanupEyeTracking;
-  }, []);
-
-  // Exploration Behavior Engine
-  useEffect(() => {
-    if (!robotRef.current) return;
-
-    let wanderTimer: NodeJS.Timeout | undefined;
-
-    if (explorationPhase === 'exploring') {
-      // Entrance Walk-in
-      gsap.fromTo(robotRef.current, 
-        { x: -500, scale: 0.8 },
-        { 
-          x: -100, 
-          scale: 1, 
-          duration: 2, 
-          ease: "power2.out", 
-          delay: 0.5,
-          onStart: () => {
-             startWalkingCycle(robotRef, legLeftRef, legRightRef);
-          },
-          onComplete: () => {
-             stopWalkingCycle(robotRef, legLeftRef, legRightRef);
-             
-             // Begin organic wandering behavior
-             const wander = () => {
-                const randomX = (Math.random() * 200) - 200; // Wander between -200 and 0
-                gsap.to(robotRef.current, {
-                   x: randomX,
-                   duration: Math.random() * 2 + 1,
-                   ease: "sine.inOut",
-                   onStart: () => startWalkingCycle(robotRef, legLeftRef, legRightRef),
-                   onComplete: () => {
-                      stopWalkingCycle(robotRef, legLeftRef, legRightRef);
-                      // Occasionally look proud/happy
-                      if (Math.random() > 0.5) {
-                         gsap.to(headRef.current, { rotation: -10, duration: 0.5, yoyo: true, repeat: 1 });
-                      }
-                      wanderTimer = setTimeout(wander, Math.random() * 3000 + 1000);
-                   }
-                });
-             };
-             wanderTimer = setTimeout(wander, 2000);
-          }
-        }
-      );
-    } else if (explorationPhase === 'noticing') {
-      clearTimeout(wanderTimer);
-      stopWalkingCycle(robotRef, legLeftRef, legRightRef);
-      
-      // Freeze, look right (towards machine), alert antenna
-      gsap.killTweensOf(robotRef.current);
-      const tl = gsap.timeline();
-      
-      tl.to(headRef.current, { rotation: 15, duration: 0.2 })
-        .to(antennaRef.current, { opacity: 1, duration: 0.1, yoyo: true, repeat: 3 })
-        .to(robotRef.current, { x: "+=10", duration: 0.2, yoyo: true, repeat: 1 }) // Startled flinch
-        .call(() => {
-           // Look back at user
-           playPointSequence(robotRef);
-        })
-        .to(headRef.current, { rotation: 25, duration: 1, delay: 1 })
-        .call(() => {
-           // Begin leading towards the machine
-           useMachineStore.getState().setExplorationPhase('leading');
-        });
-
-    } else if (explorationPhase === 'leading') {
-      // Slowly walk towards the distant machine
-      gsap.to(robotRef.current, {
-        x: 600,
-        scale: 0.5, // Perspective shrinking
-        y: -50,
-        duration: 10,
-        ease: "sine.inOut",
-        onStart: () => startWalkingCycle(robotRef, legLeftRef, legRightRef),
-        onUpdate: function() {
-           // Occasionally look back while walking
-           if (this.progress() > 0.3 && this.progress() < 0.35) {
-              gsap.to(headRef.current, { rotation: -20, duration: 0.5, yoyo: true, repeat: 1 });
-           }
-        }
-      });
-    }
-
-    return () => clearTimeout(wanderTimer);
-  }, [explorationPhase]);
-
   return (
-    <div ref={containerRef} className="absolute inset-0 z-40 pointer-events-none">
-      <Robot 
-        ref={robotRef}
-        headRef={headRef}
-        chestRef={chestRef}
-        eyesRef={eyesRef}
-        antennaRef={antennaRef}
-        legLeftRef={legLeftRef}
-        legRightRef={legRightRef}
-      />
+    <div className="robot-container absolute bottom-[20%] left-[20%] z-[25] pointer-events-auto">
+      <motion.svg 
+        viewBox="0 0 200 300" 
+        className="w-32 h-48 drop-shadow-2xl cursor-pointer"
+        whileHover={{ scale: 1.05 }}
+      >
+        {/* Antenna */}
+        <line className="robot-antenna" x1="100" y1="20" x2="100" y2="50" stroke="var(--color-workshop-copper)" strokeWidth="4" />
+        <circle className="robot-antenna-bulb" cx="100" cy="20" r="8" fill="#fcdba1" />
+        
+        {/* Head */}
+        <rect className="robot-head" x="60" y="50" width="80" height="60" rx="10" fill="#150e09" stroke="var(--color-workshop-brass)" strokeWidth="4" style={{ transformOrigin: "100px 110px" }} />
+        
+        {/* Eyes */}
+        <g className="robot-eyes">
+          <path d="M 75 80 Q 85 90 95 80" fill="none" stroke="#fcdba1" strokeWidth="4" strokeLinecap="round" />
+          <path d="M 105 80 Q 115 90 125 80" fill="none" stroke="#fcdba1" strokeWidth="4" strokeLinecap="round" />
+        </g>
+
+        {/* Neck */}
+        <rect x="90" y="110" width="20" height="20" fill="var(--color-workshop-copper)" />
+        
+        {/* Body */}
+        <rect className="robot-body" x="50" y="130" width="100" height="90" rx="15" fill="#d9453b" stroke="var(--color-workshop-brass)" strokeWidth="4" />
+        <circle cx="100" cy="175" r="20" fill="#fcdba1" opacity="0.8" filter="blur(2px)" />
+        
+        {/* Arms */}
+        <rect className="robot-arm-left" x="30" y="140" width="15" height="60" rx="5" fill="var(--color-workshop-copper)" stroke="var(--color-workshop-brass)" strokeWidth="2" style={{ transformOrigin: "40px 145px" }} />
+        <rect className="robot-arm-right" x="155" y="140" width="15" height="60" rx="5" fill="var(--color-workshop-copper)" stroke="var(--color-workshop-brass)" strokeWidth="2" style={{ transformOrigin: "160px 145px" }} />
+        
+        {/* Wheels/Legs */}
+        <rect className="robot-leg-left" x="70" y="220" width="15" height="30" rx="5" fill="var(--color-workshop-copper)" />
+        <rect className="robot-leg-right" x="115" y="220" width="15" height="30" rx="5" fill="var(--color-workshop-copper)" />
+      </motion.svg>
     </div>
   );
 }

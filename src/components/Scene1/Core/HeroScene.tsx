@@ -6,11 +6,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGlobalState } from '@/store/useGlobalState';
 import { sounds } from './AudioController';
 import Lighting from "../Environment/Lighting";
-import WorkshopBackground from "../Environment/WorkshopBackground";
-import Workbench from "../Environment/Workbench";
 import DustParticles from "../Environment/DustParticles";
 import TextOverlay from "./TextOverlay";
 import CustomCursor from "./CustomCursor";
+
+import BackgroundLayer from "../Environment/BackgroundLayer";
+import MidgroundLayer from "../Environment/MidgroundLayer";
+import ForegroundLayer from "../Environment/ForegroundLayer";
+import Robot from "../Robot/Robot";
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -19,6 +22,21 @@ if (typeof window !== 'undefined') {
 export default function HeroScene() {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
+  
+  // Layer refs for parallax
+  const bgRef = useRef<HTMLDivElement>(null);
+  const midRef = useRef<HTMLDivElement>(null);
+  const fgRef = useRef<HTMLDivElement>(null);
+  
+  // Robot refs
+  const robotContainerRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<SVGRectElement>(null);
+  const chestRef = useRef<SVGRectElement>(null);
+  const eyesRef = useRef<SVGGElement>(null);
+  const antennaRef = useRef<SVGCircleElement>(null);
+  const legLeftRef = useRef<SVGPathElement>(null);
+  const legRightRef = useRef<SVGPathElement>(null);
+
   const { transitionToScene } = useGlobalState();
 
   useEffect(() => {
@@ -36,60 +54,56 @@ export default function HeroScene() {
              transitionToScene('scene2_machine_room');
           },
           onUpdate: (self) => {
-            // Optional: drive audio based on progress
             const p = self.progress;
-            if (p > 0.4 && p < 0.65) {
-               if (Math.random() > 0.95) sounds.gearClick.play();
+            if (p > 0.3 && p < 0.8) {
+               if (Math.random() > 0.96) sounds.gearClick.play();
             }
           }
         }
       });
 
-      // 0-20%: Title stays prominent (no animations needed here, they start at 0.2)
+      // 0-20%: Initial exploration, title stays prominent.
 
-      // 20-40%: Title gently scales down and fades while the camera begins drifting toward the door
+      // 20-40%: Title fades, Z-axis parallax begins
       tl.to(".hero-title", { opacity: 0, scale: 0.9, y: -20, duration: 0.2 }, 0.2)
-        .to(".hero-subtitle", { opacity: 0, scale: 0.95, y: -10, duration: 0.2 }, 0.2)
-        .to(stickyRef.current, {
-          scale: 1.6,
-          x: "-12vw",
-          y: "8vh",
-          duration: 0.2,
-          ease: "power1.inOut"
-        }, 0.2);
+        .to(".hero-subtitle", { opacity: 0, scale: 0.95, y: -10, duration: 0.2 }, 0.2);
 
-      // 40-70%: The robot becomes the visual focus and starts walking to the door
-      // Mechanical arm also triggers here
-      tl.to(".robot-head", { rotation: -30, duration: 0.05, ease: "power1.inOut" }, 0.4) // Wakes up, looks back
-        .to(".robot-head", { rotation: 20, duration: 0.05, ease: "power1.inOut" }, 0.45) // Looks toward door
-        .to(".robot-container", { x: 300, y: 10, scale: 0.8, duration: 0.25, ease: "none" }, 0.45) // Walks towards door
-        .to([".robot-leg-left", ".robot-leg-right"], { y: -5, duration: 0.02, yoyo: true, repeat: 12 }, 0.45) // Walking cycle
-        .to(".robot-head", { rotation: -10, duration: 0.05 }, 0.65) // Looks back at visitor when near door
-        .to(".mechanical-crank", { opacity: 1, duration: 0.05 }, 0.5)
-        .to(".crank-arm", { rotation: 720, duration: 0.2, ease: "power2.inOut" }, 0.5)
-        .to(".crank-ring", { strokeDashoffset: 0, duration: 0.2, ease: "power2.inOut" }, 0.5)
-        .to(".door-gear", { rotation: 360, duration: 0.2, ease: "power1.inOut" }, 0.5);
+      // Z-axis parallax (Pushing IN)
+      // Foreground moves away fast (scales up and fades out)
+      tl.to(fgRef.current, { scale: 2.5, opacity: 0, x: "-20vw", y: "10vh", duration: 0.4, ease: "power2.in" }, 0.2);
+      
+      // Midground scales up gradually to dominate the screen
+      tl.to(midRef.current, { scale: 1.8, y: "15vh", duration: 0.6, ease: "power1.inOut" }, 0.2);
+      
+      // Background slightly scales up for deep parallax
+      tl.to(bgRef.current, { scale: 1.2, duration: 0.8, ease: "none" }, 0.2);
 
-      // 70-100%: The door dominates the screen, opens, and the camera passes through it into Scene 1
-      tl.to(".workshop-door-group", {
-        scale: 1.1,
-        y: "-5%",
-        opacity: 0, 
-        duration: 0.15,
-        ease: "power1.in"
-      }, 0.7)
-      .to(".door-glow", {
-        opacity: 1,
-        filter: 'blur(30px)',
-        scale: 2,
-        duration: 0.15
-      }, 0.7)
-      .to(stickyRef.current, {
+      // 40-70%: Robot logic
+      // Robot starts in the foreground/midground threshold and walks toward the machine
+      tl.to(headRef.current, { rotation: 20, duration: 0.05, ease: "power1.inOut" }, 0.4) // Look at machine
+        .to(robotContainerRef.current, { 
+          x: "20vw", 
+          y: "-10vh", 
+          scale: 0.6, // Scales down as it walks deeper into the room
+          duration: 0.25, 
+          ease: "none" 
+        }, 0.45)
+        .to([legLeftRef.current, legRightRef.current], { y: -5, duration: 0.02, yoyo: true, repeat: 12 }, 0.45) // Walking cycle
+        .to(headRef.current, { rotation: -10, duration: 0.05 }, 0.65); // Look back at visitor
+
+      // 70-100%: Machine engulfs the screen (transitioning to Scene 2)
+      tl.to(midRef.current, {
         scale: 15,
-        opacity: 0,
-        duration: 0.2,
+        opacity: 0, // Machine fades out as we pass "through" it
+        duration: 0.3,
         ease: "power3.in"
-      }, 0.8);
+      }, 0.7)
+      .to(bgRef.current, {
+        scale: 2,
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in"
+      }, 0.7);
 
     }, containerRef);
 
@@ -98,17 +112,39 @@ export default function HeroScene() {
 
   return (
     <div ref={containerRef} className="relative w-full h-[600vh]">
-      <div ref={stickyRef} className="sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center cursor-none transform-gpu origin-center">
+      <div ref={stickyRef} className="sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center cursor-none bg-[#050403]">
         <CustomCursor />
-        {/* Deepest Layer: Background & Lighting */}
-        <Lighting />
-        <WorkshopBackground />
         
-        {/* Mid Layer: Floating Dust */}
+        {/* Layer 1: Deep Background (Walls, Windows) */}
+        <div ref={bgRef} className="absolute inset-0 w-full h-full transform-gpu origin-center">
+          <BackgroundLayer />
+        </div>
+
+        {/* Global Environmental Effects */}
+        <Lighting />
         <DustParticles />
 
-        {/* Foreground Layer: Workbench, Robot, Blueprint */}
-        <Workbench />
+        {/* Layer 2: Midground (Giant Machine) */}
+        <div ref={midRef} className="absolute inset-0 w-full h-full transform-gpu origin-center">
+          <MidgroundLayer />
+        </div>
+
+        {/* Layer 2.5: Robot (Navigates between FG and MG) */}
+        <div ref={robotContainerRef} className="absolute inset-0 z-[25] pointer-events-none transform-gpu origin-bottom">
+          <Robot 
+            headRef={headRef}
+            chestRef={chestRef}
+            eyesRef={eyesRef}
+            antennaRef={antennaRef}
+            legLeftRef={legLeftRef}
+            legRightRef={legRightRef}
+          />
+        </div>
+
+        {/* Layer 3: Foreground (Workbench, Blueprints, Shelves) */}
+        <div ref={fgRef} className="absolute inset-0 w-full h-full transform-gpu origin-center">
+          <ForegroundLayer />
+        </div>
 
         {/* UI Layer */}
         <TextOverlay />
