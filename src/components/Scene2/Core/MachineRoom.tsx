@@ -4,52 +4,75 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useMachineStore } from '@/store/useMachineStore';
 import CustomCursor from '../../Scene1/Core/CustomCursor';
-import CoreMachine from '../Environment/CoreMachine';
-import DraggableGear from '../Interactables/DraggableGear';
-import RobotMechanic from '../Robot/RobotMechanic';
+import GrandHallBackground from '../Environment/GrandHallBackground';
+import DistantMachine from '../Environment/DistantMachine';
+import InventionsGallery from '../Interactables/InventionsGallery';
+import RobotExplorer from '../Robot/RobotExplorer';
+import { sounds, unlockAudio } from '../../Scene1/Core/AudioController';
 
 export default function MachineRoom() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { machineState, gearsInstalled } = useMachineStore();
+  const { explorationPhase } = useMachineStore();
 
   useEffect(() => {
-    // Camera Dolly based on gear progress
+    // Start ambient sounds upon entering Scene 2
+    unlockAudio();
+    sounds.clockTick.play();
+    sounds.clockTick.loop(true);
+    
+    // Slow initial camera pan to reveal the massive scale of the room
+    if (containerRef.current) {
+       gsap.fromTo(containerRef.current, 
+         { scale: 1.1, x: 200 }, 
+         { scale: 1, x: 0, duration: 10, ease: 'power2.out' }
+       );
+    }
+    
+    return () => {
+       sounds.clockTick.stop();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!containerRef.current) return;
 
-    if (machineState === 'stage1') {
-      gsap.to(containerRef.current, { scale: 1.05, duration: 4, ease: 'power2.inOut' });
-    } else if (machineState === 'stage2') {
-      gsap.to(containerRef.current, { scale: 1.1, y: 20, duration: 4, ease: 'power2.inOut' });
-    } else if (machineState === 'overdrive') {
-      gsap.to(containerRef.current, { scale: 1.2, duration: 6, ease: 'power2.inOut' });
-      // Massive shake
-      gsap.to(containerRef.current, { x: 5, duration: 0.1, yoyo: true, repeat: 10, ease: 'rough' });
+    if (explorationPhase === 'noticing') {
+       // Subtle dramatic camera push in when the red light blinks
+       gsap.to(containerRef.current, { scale: 1.05, x: -50, duration: 4, ease: 'power2.inOut' });
+    } else if (explorationPhase === 'leading') {
+       // Camera follows the robot deeper into the hall
+       gsap.to(containerRef.current, { scale: 1.1, x: -150, y: 50, duration: 10, ease: 'sine.inOut' });
     }
-  }, [machineState, gearsInstalled]);
+  }, [explorationPhase]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden flex items-center justify-center cursor-none transform-gpu origin-center bg-[#0a0807]">
+    <div ref={containerRef} className="relative w-full h-full overflow-hidden flex items-center justify-center cursor-none transform-gpu origin-center bg-[#050403]">
       <CustomCursor />
       
-      {/* Background Ambience */}
-      <div className="absolute inset-0 z-0 bg-gradient-radial from-[#1a130f] via-[#050403] to-[#000000] opacity-80" />
+      {/* Deepest Layer: Ambient Gradients */}
+      <div className="absolute inset-0 z-0 bg-gradient-radial from-[#1a130f] via-[#0a0807] to-[#000000] opacity-90" />
       
-      {/* Volumetric Light Rays */}
+      {/* Grand Hall Architecture & Parallax */}
+      <GrandHallBackground />
+      
+      {/* Volumetric Light Rays from broken ceiling */}
       <div 
-        className="absolute top-[-20%] left-[10%] w-[80%] h-[150%] bg-[#fcdba1] opacity-5 mix-blend-screen pointer-events-none transform rotate-45 transition-opacity duration-1000" 
-        style={{ filter: 'blur(100px)', opacity: gearsInstalled * 0.1 + 0.05 }}
+        className="absolute top-[-30%] left-[20%] w-[60%] h-[150%] bg-[#fcdba1] opacity-10 mix-blend-screen pointer-events-none transform rotate-45" 
+        style={{ filter: 'blur(80px)' }}
+      />
+      <div 
+        className="absolute top-[-20%] left-[50%] w-[40%] h-[150%] bg-[#b58953] opacity-5 mix-blend-screen pointer-events-none transform rotate-45" 
+        style={{ filter: 'blur(100px)' }}
       />
 
-      {/* The Centerpiece */}
-      <CoreMachine />
+      {/* The Distant Machine (Deep Background) */}
+      <DistantMachine />
 
-      {/* The Draggable Gears */}
-      <DraggableGear id="gear-1" startX={10} startY={80} targetX={50} targetY={30} size={80} type="primary" />
-      <DraggableGear id="gear-2" startX={80} startY={70} targetX={40} targetY={45} size={100} type="secondary" />
-      <DraggableGear id="gear-3" startX={20} startY={60} targetX={60} targetY={55} size={60} type="small" />
+      {/* The Inventions (Mid/Foreground) */}
+      <InventionsGallery />
 
       {/* The Robot */}
-      <RobotMechanic />
+      <RobotExplorer />
     </div>
   );
 }

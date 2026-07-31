@@ -32,9 +32,18 @@ export default function SceneController() {
   }, [currentScene, renderedScene]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#050403]">
-      {renderedScene === 'scene1_entrance' && <HeroScene />}
-      {renderedScene === 'scene2_machine_room' && <MachineRoom />}
+    <div className={`relative w-full min-h-screen bg-[#050403] ${renderedScene === 'scene1_entrance' ? '' : 'overflow-hidden h-screen'}`}>
+      
+      {/* Background / Upcoming Scene (Preloaded) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {renderedScene === 'scene1_entrance' && <MachineRoom />}
+      </div>
+
+      {/* Current Scenes */}
+      <div className="relative z-10 w-full h-full">
+        {renderedScene === 'scene1_entrance' && <HeroScene />}
+        {renderedScene === 'scene2_machine_room' && <MachineRoom />}
+      </div>
 
       {/* Global Transition Overlay (Warm Light Flood) */}
       <div 

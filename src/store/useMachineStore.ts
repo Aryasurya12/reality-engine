@@ -1,32 +1,18 @@
 import { create } from 'zustand';
 
-export type MachineState = 'broken' | 'stage1' | 'stage2' | 'overdrive';
-export type RobotReaction = 'disappointed' | 'curious' | 'celebrating' | 'amazed';
+export type ExplorationPhase = 'exploring' | 'noticing' | 'leading';
+export type RobotReaction = 'curious' | 'interacting' | 'proud' | 'alert';
 
-interface MachineStore {
-  gearsInstalled: number;
-  machineState: MachineState;
+interface ExplorationStore {
+  explorationPhase: ExplorationPhase;
   robotReaction: RobotReaction;
-  installGear: () => void;
+  setExplorationPhase: (phase: ExplorationPhase) => void;
   setRobotReaction: (reaction: RobotReaction) => void;
 }
 
-export const useMachineStore = create<MachineStore>((set) => ({
-  gearsInstalled: 0,
-  machineState: 'broken',
-  robotReaction: 'disappointed',
-  installGear: () => set((state) => {
-    const newCount = state.gearsInstalled + 1;
-    let newState: MachineState = 'broken';
-    if (newCount === 1) newState = 'stage1';
-    if (newCount === 2) newState = 'stage2';
-    if (newCount >= 3) newState = 'overdrive';
-    
-    return {
-      gearsInstalled: newCount,
-      machineState: newState,
-      robotReaction: 'celebrating' // Momentary celebration on each install
-    };
-  }),
+export const useMachineStore = create<ExplorationStore>((set) => ({
+  explorationPhase: 'exploring',
+  robotReaction: 'curious',
+  setExplorationPhase: (phase) => set({ explorationPhase: phase }),
   setRobotReaction: (reaction) => set({ robotReaction: reaction })
 }));

@@ -30,16 +30,16 @@ const Robot = forwardRef<HTMLDivElement, RobotProps>(({ headRef, chestRef, eyesR
   }, []);
 
   return (
-    <div ref={ref} className="absolute bottom-[20%] right-[20%] w-32 h-40 z-40 transform -rotate-12 transform-origin-bottom">
+    <div ref={ref} className="robot-container absolute bottom-[20%] right-[20%] w-32 h-40 z-40 transform -rotate-12 transform-origin-bottom">
       <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-2xl overflow-visible">
         
         {/* Legs / Wheels */}
         <g stroke="var(--color-workshop-brass)" strokeWidth="6" fill="transparent" strokeLinecap="round">
-          <path ref={legLeftRef} d="M 35 110 L 35 125" style={{ transformOrigin: "35px 110px" }} />
-          <path ref={legRightRef} d="M 65 110 L 65 125" style={{ transformOrigin: "65px 110px" }} />
+          <path ref={legLeftRef} className="robot-leg-left" d="M 35 110 L 35 125" style={{ transformOrigin: "35px 110px" }} />
+          <path ref={legRightRef} className="robot-leg-right" d="M 65 110 L 65 125" style={{ transformOrigin: "65px 110px" }} />
           {/* Feet */}
-          <line x1="30" y1="125" x2="40" y2="125" strokeWidth="4" />
-          <line x1="60" y1="125" x2="70" y2="125" strokeWidth="4" />
+          <line className="robot-foot-left" x1="30" y1="125" x2="40" y2="125" strokeWidth="4" />
+          <line className="robot-foot-right" x1="60" y1="125" x2="70" y2="125" strokeWidth="4" />
         </g>
 
         {/* Body Container to allow head to rotate independently */}
@@ -59,8 +59,8 @@ const Robot = forwardRef<HTMLDivElement, RobotProps>(({ headRef, chestRef, eyesR
           <path d="M 80 75 Q 90 90 75 105" stroke="var(--color-workshop-brass)" strokeWidth="6" fill="transparent" strokeLinecap="round" />
         </g>
 
-        {/* Head Container - Can rotate freely based on mouse position */}
-        <g ref={headRef as any} style={{ transformOrigin: "50px 60px" }}>
+        {/* Head Container */}
+        <g ref={headRef as any} className="robot-head" style={{ transformOrigin: "50px 60px" }}>
           {/* Antenna */}
           <line x1="50" y1="20" x2="50" y2="5" stroke="var(--color-workshop-copper)" strokeWidth="2" />
           <circle ref={antennaRef} cx="50" cy="5" r="4" fill="#fcdba1" opacity="0.3" filter="blur(1px)" />

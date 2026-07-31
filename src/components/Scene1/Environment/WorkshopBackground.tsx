@@ -108,7 +108,7 @@ export default function WorkshopBackground() {
   return (
     <div ref={bgRef} className="absolute inset-[-5%] w-[110%] h-[110%] z-10 pointer-events-none flex flex-col justify-between">
       
-      <div className="absolute top-[20%] right-[10%] w-64 h-96 opacity-40 group">
+      <div className="workshop-door-group absolute top-[20%] right-[10%] w-64 h-96 opacity-40 group">
         <svg viewBox="0 0 200 300" className="w-full h-full drop-shadow-2xl">
           {/* Door Frame */}
           <rect x="10" y="10" width="180" height="290" fill="#050403" stroke="var(--color-workshop-brass)" strokeWidth="4" />
@@ -119,7 +119,7 @@ export default function WorkshopBackground() {
           <circle cx="100" cy="150" r="30" fill="none" stroke="var(--color-workshop-copper)" strokeWidth="8" opacity="0.4" className="group-hover:stroke-[#fcdba1] transition-colors duration-500" />
           
           {/* The single mysterious gear */}
-          <g ref={doorGearRef as any} style={{ transformOrigin: "100px 150px" }} className="group-hover:animate-spin">
+          <g ref={doorGearRef as any} style={{ transformOrigin: "100px 150px" }} className="door-gear group-hover:animate-spin">
              <circle cx="100" cy="150" r="15" fill="none" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
              <line x1="85" y1="150" x2="115" y2="150" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
              <line x1="100" y1="135" x2="100" y2="165" stroke="var(--color-workshop-brass)" strokeWidth="4" opacity="0.5" />
@@ -132,17 +132,15 @@ export default function WorkshopBackground() {
         {/* Orange Volumetric Glow escaping from under the door */}
         <div 
           ref={doorGlowRef}
-          className="absolute bottom-0 left-0 w-full h-8 bg-orange-500 opacity-20 mix-blend-screen transition-opacity duration-500"
+          className="door-glow absolute bottom-0 left-0 w-full h-8 bg-orange-500 opacity-20 mix-blend-screen transition-opacity duration-500"
           style={{ filter: 'blur(15px)' }}
         />
       </div>
 
-      {/* The Mechanical Crank (Appears when robot reaches door) */}
-      {storyPhase === 'waiting_at_door' && (
-         <div className="pointer-events-auto absolute inset-0 z-[100]">
-            <MechanicalCrank />
-         </div>
-      )}
+      {/* The Mechanical Crank (Animated via ScrollTrigger) */}
+      <div className="pointer-events-auto absolute inset-0 z-[100]">
+        <MechanicalCrank />
+      </div>
 
       {/* Hanging Lamp (Top Center) */}
       <div className="absolute top-0 left-1/3 w-32 flex flex-col items-center">

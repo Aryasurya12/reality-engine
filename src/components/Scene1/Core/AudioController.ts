@@ -9,7 +9,13 @@ export const sounds = {
   gearClick: new Howl({ src: ['/sounds/gear_click.mp3'], volume: 0.4 }),
   steamHiss: new Howl({ src: ['/sounds/steam_hiss.mp3'], volume: 0.1 }),
   robotBeep: new Howl({ src: ['/sounds/robot_beep.mp3'], volume: 0.3 }),
-  ambientHum: new Howl({ src: ['/sounds/ambient_hum.mp3'], volume: 0.1, loop: true })
+  ambientHum: new Howl({ src: ['/sounds/ambient_hum.mp3'], volume: 0.1, loop: true }),
+  
+  // Scene 2 Ambient Sounds
+  clockTick: new Howl({ src: ['/sounds/clock_tick.mp3'], volume: 0.1 }),
+  metalExpansion: new Howl({ src: ['/sounds/metal_expansion.mp3'], volume: 0.2 }),
+  redAlert: new Howl({ src: ['/sounds/red_alert.mp3'], volume: 0.2 }),
+  musicBox: new Howl({ src: ['/sounds/music_box.mp3'], volume: 0.4 })
 };
 
 let audioUnlocked = false;
