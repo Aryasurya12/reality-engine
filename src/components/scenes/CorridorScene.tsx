@@ -72,6 +72,7 @@ const CorridorScene = memo(function CorridorScene() {
           duration: 0.02,
           ease: 'power1.inOut',
           filter: 'blur(4px)',
+          display: 'none',
         }, startTime + 0.03);
       });
 
@@ -88,8 +89,27 @@ const CorridorScene = memo(function CorridorScene() {
       masterTl.to(wallRightRef.current, { '--light-x': '-9500px', ease: 'none' }, 0); // Right wall origin is right, so negative X goes deeper
       masterTl.to(floorRef.current, { '--light-y': '9500px', ease: 'none' }, 0);
       
+      // 3.5 The Workbench Bridge (80% to 90% scroll)
+      masterTl.addLabel('workbench', 0.8);
+      masterTl.to('.workbench-scene', { opacity: 1, duration: 0.05, ease: 'power1.inOut' }, 'workbench');
+      
+      // Blueprint drift
+      const blueprints = gsap.utils.toArray('.blueprint');
+      blueprints.forEach((bp: any, i) => {
+        masterTl.to(bp, {
+          y: (Math.random() - 0.5) * 400,
+          x: (Math.random() - 0.5) * 400,
+          rotation: '+=30',
+          duration: 0.1,
+          ease: 'none'
+        }, 'workbench');
+      });
+
       // 4. The Twist Ending Sequence (90% to 100% scroll)
       masterTl.addLabel('chamberArrival', 0.9);
+      
+      // Fade out corridor walls into darkness
+      masterTl.to([wallLeftRef.current, wallRightRef.current, floorRef.current], { opacity: 0, duration: 0.05, ease: 'power2.out' }, 'chamberArrival');
       
       masterTl.to(cameraRigRef.current, { z: 10000, ease: 'power2.out', duration: 0.1 }, 'chamberArrival');
       
@@ -121,14 +141,7 @@ const CorridorScene = memo(function CorridorScene() {
         masterTl.to(`.${id} .case-rim-light`, { opacity: 1, duration: 0.02 }, triggerPos);
         masterTl.to(`.${id} .case-invention`, { opacity: 1, scale: 1, duration: 0.02 }, triggerPos);
         masterTl.to(`.${id} .frame-title`, { opacity: 1, duration: 0.02 }, triggerPos);
-        
-        if (id === 'frame-eye') {
-          masterTl.to(`.${id} .eye-lens`, { scale: 1.1, yoyo: true, repeat: 10, duration: 0.01 }, triggerPos);
-        } else if (id === 'frame-brain') {
-          masterTl.to(`.${id} .brain-node`, { fill: '#fcdba1', yoyo: true, repeat: 10, duration: 0.01, stagger: 0.002 }, triggerPos);
-        } else if (id === 'frame-automaton') {
-          masterTl.to(`.${id} .auto-arm`, { rotation: 10, yoyo: true, repeat: 10, duration: 0.01 }, triggerPos);
-        }
+        masterTl.to(`.${id} .click-hint`, { opacity: 1, duration: 0.02 }, triggerPos);
       });
       
       // Archway lighting up as we approach
@@ -152,7 +165,7 @@ const CorridorScene = memo(function CorridorScene() {
         <div className="absolute inset-0 z-30 pointer-events-none" style={{ background: 'radial-gradient(circle at center, transparent 30%, #050403 80%)' }} />
         
         {/* Intro Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 font-serif text-3xl md:text-5xl text-glow-strong text-[#e8c07a] z-10 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 font-serif text-3xl md:text-5xl text-glow-strong text-[#e8c07a] z-[100] pointer-events-none">
           <SplitText lineId="line1" text="The workshop has been silent for years." />
           <SplitText lineId="line2" text="Everything it ever built... is still inside it." />
           <SplitText lineId="line3" text="One spark is all it needs." />
@@ -242,6 +255,41 @@ const CorridorScene = memo(function CorridorScene() {
                    <div className="absolute inset-[-40px] border-[1px] border-[#b58953] archway-glow opacity-20" />
                  </div>
               </div>
+           </div>
+
+           {/* Section 3: The Workbench Bridge Scene */}
+           <div 
+             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none workbench-scene opacity-0"
+             style={{ transform: 'translateZ(-8500px)', width: '1500px', height: '1500px' }}
+           >
+             <div className="absolute inset-0 flex items-center justify-center">
+               <div className="relative w-full h-full flex flex-col items-center justify-center">
+                 {/* Draped Shape */}
+                 <div className="absolute inset-0 flex items-center justify-center z-10">
+                   <div className="absolute w-[800px] h-[800px] bg-[#fcdba1] opacity-5 blur-[100px] rounded-full scale-150 animate-[pulse_4s_ease-in-out_infinite]" />
+                   <svg width="400" height="500" viewBox="0 0 200 250" className="drop-shadow-[0_0_20px_rgba(232,168,74,0.4)] relative">
+                     <path d="M50 250 C 50 150, 80 50, 100 20 C 120 50, 150 150, 150 250 Z" fill="#050403" stroke="#b58953" strokeWidth="2" />
+                     <path d="M60 250 C 60 180, 90 80, 100 40 C 110 80, 140 180, 140 250 Z" fill="none" stroke="#fcdba1" strokeWidth="1" strokeDasharray="4 2" />
+                     <path d="M40 250 C 40 200, 70 120, 100 80 C 130 120, 160 200, 160 250 Z" fill="none" stroke="#e8c07a" strokeWidth="0.5" className="opacity-50" />
+                   </svg>
+                 </div>
+                 
+                 {/* Blueprints drifting */}
+                 <div className="blueprint absolute top-[10%] left-[20%] w-[180px] h-[240px] border border-[#b58953]/30 bg-[#0a0806]/60 p-4 opacity-70 z-20">
+                   <div className="h-1 w-3/4 bg-[#b58953]/40 mb-2" />
+                   <div className="h-1 w-1/2 bg-[#b58953]/40 mb-4" />
+                   <div className="w-full h-1/2 border border-dashed border-[#b58953]/30" />
+                 </div>
+                 
+                 <div className="blueprint absolute top-[15%] right-[15%] w-[150px] h-[200px] border border-[#b58953]/30 bg-[#0a0806]/60 p-4 opacity-50 z-20">
+                   <div className="w-full h-full border border-dashed border-[#b58953]/30 rounded-full" />
+                 </div>
+                 
+                 <div className="blueprint absolute bottom-[20%] left-[15%] w-[200px] h-[160px] border border-[#b58953]/30 bg-[#0a0806]/60 p-4 opacity-80 z-20">
+                   <div className="h-full w-full border border-[#b58953]/20" />
+                 </div>
+               </div>
+             </div>
            </div>
 
            {/* Final Chamber */}

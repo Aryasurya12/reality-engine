@@ -18,9 +18,9 @@ const TwistEndingScene = memo(function TwistEndingScene() {
       
       {/* Title Card fading in from darkness */}
       <div className="relative flex flex-col items-center justify-center title-card opacity-0 scale-95">
-         <div className="absolute inset-0 bg-[#fcdba1] opacity-5 blur-[100px] rounded-full scale-150" />
+         <div className="absolute inset-0 bg-[#fcdba1] opacity-5 blur-[100px] rounded-full scale-150 animate-[pulse_4s_ease-in-out_infinite]" />
          <h1 className="text-7xl md:text-8xl font-serif text-glow-strong text-[#e8c07a] tracking-widest relative z-10">ARYA</h1>
-         <p className="text-2xl font-serif text-[#b58953] mt-6 italic relative z-10">The Workshop's Next Invention</p>
+         <p className="text-2xl font-serif text-[#b58953] mt-6 italic relative z-10">Workshop Lives Again</p>
       </div>
       
       {/* Credits Layer (Framer Motion) */}

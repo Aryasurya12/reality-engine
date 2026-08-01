@@ -1,128 +1,86 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGlobalState } from '@/store/useGlobalState';
 
-const Hotspot = ({ x, y, label, onHover, onLeave }: { x: number, y: number, label: string, onHover: () => void, onLeave: () => void }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <div 
-      className="absolute flex flex-col items-center justify-center cursor-crosshair z-50"
-      style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-      onMouseEnter={() => { setIsHovered(true); onHover(); }}
-      onMouseLeave={() => { setIsHovered(false); onLeave(); }}
-    >
-      <div className="w-12 h-12 rounded-full border-2 border-dashed border-[#b58953] bg-[#b58953] bg-opacity-10 animate-[spin_4s_linear_infinite] hover:bg-opacity-40 transition-colors" />
-      <AnimatePresence>
-        {isHovered && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute top-16 whitespace-nowrap bg-[#0a0806] border border-[#b58953] px-4 py-2 rounded text-[#e8c07a] font-serif shadow-[0_0_15px_rgba(181,137,83,0.3)] pointer-events-none"
-          >
-            {label}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+const INVENTION_DATA = {
+  eye: {
+    title: 'The Mechanical Eye',
+    image: '/images/invention_eye.png',
+    lore: 'Constructed in the early days of the workshop, this optical array was designed to see beyond the visible spectrum. Its interlocking brass irises and multi-focal crystal lenses can track microscopic fractures in reality itself. It is said that the inventor spent three years calibrating its focus ring, only to realize it was staring back at him.'
+  },
+  brain: {
+    title: 'The Reasoning Engine',
+    image: '/images/invention_brain.png',
+    lore: 'A differential logic engine capable of unspooling paradoxes. Housed in a pressurized copper chassis, its vacuum tubes process thousands of philosophical queries per second. It was originally built to calculate the exact weight of a human soul, though its final output was merely a highly complicated question.'
+  },
+  automaton: {
+    title: 'The Automaton',
+    image: '/images/invention_automaton.png',
+    lore: 'The crowning achievement of the workshop. A fully articulated, self-winding companion constructed from salvaged locomotive parts and precision clockwork. While its combat capabilities are undeniable, it was primarily programmed to play the cello and water the greenhouse plants.'
+  }
 };
-
-const EyeInterior = () => {
-  const [activeSpot, setActiveSpot] = useState<string | null>(null);
-  return (
-    <div className="relative w-[800px] h-[800px]">
-      <svg viewBox="-100 -100 200 200" className="w-full h-full drop-shadow-[0_0_40px_rgba(232,168,74,0.4)]">
-        <motion.circle 
-          cx="0" cy="0" r="60" 
-          fill="none" stroke="#b58953" strokeWidth="8" 
-          animate={activeSpot === 'lens' ? { strokeWidth: 16, stroke: '#fcdba1', scale: 1.1 } : { strokeWidth: 8, stroke: '#b58953', scale: 1 }}
-        />
-        <motion.circle 
-          cx="0" cy="0" r="20" fill="#fcdba1" 
-          animate={activeSpot === 'pupil' ? { scale: 0.3, fill: '#ffffff' } : { scale: 1, fill: '#fcdba1' }}
-        />
-        <line x1="-60" y1="0" x2="-90" y2="0" stroke="#b58953" strokeWidth="8" />
-        <line x1="60" y1="0" x2="90" y2="0" stroke="#b58953" strokeWidth="8" />
-      </svg>
-      <Hotspot x={50} y={15} label="Focus Ring Calibration" onHover={() => setActiveSpot('lens')} onLeave={() => setActiveSpot(null)} />
-      <Hotspot x={50} y={50} label="Iris Aperture Control" onHover={() => setActiveSpot('pupil')} onLeave={() => setActiveSpot(null)} />
-    </div>
-  );
-};
-
-const BrainInterior = () => {
-  const [activeSpot, setActiveSpot] = useState<string | null>(null);
-  return (
-    <div className="relative w-[800px] h-[800px]">
-      <svg viewBox="-100 -100 200 200" className="w-full h-full drop-shadow-[0_0_40px_rgba(232,168,74,0.4)]">
-        <rect x="-50" y="-70" width="100" height="140" rx="30" fill="none" stroke="#b58953" strokeWidth="8" />
-        <motion.circle cx="-20" cy="-30" r="8" fill="#634421" animate={activeSpot === 'logic' ? { fill: '#ffffff', scale: 1.5 } : {}} />
-        <motion.circle cx="20" cy="-30" r="8" fill="#634421" animate={activeSpot === 'logic' ? { fill: '#ffffff', scale: 1.5 } : {}} />
-        <motion.circle cx="-20" cy="30" r="8" fill="#634421" animate={activeSpot === 'memory' ? { fill: '#ffffff', scale: 1.5 } : {}} />
-        <motion.circle cx="20" cy="30" r="8" fill="#634421" animate={activeSpot === 'memory' ? { fill: '#ffffff', scale: 1.5 } : {}} />
-        <path d="M 0 -70 L 0 70 M -50 0 L 50 0" stroke="#b58953" strokeWidth="4" strokeDasharray="8 4" />
-      </svg>
-      <Hotspot x={50} y={20} label="Logic Processor" onHover={() => setActiveSpot('logic')} onLeave={() => setActiveSpot(null)} />
-      <Hotspot x={50} y={80} label="Memory Core" onHover={() => setActiveSpot('memory')} onLeave={() => setActiveSpot(null)} />
-    </div>
-  );
-};
-
-const AutomatonInterior = () => {
-  const [activeSpot, setActiveSpot] = useState<string | null>(null);
-  return (
-    <div className="relative w-[800px] h-[800px]">
-      <svg viewBox="-100 -100 200 200" className="w-full h-full drop-shadow-[0_0_40px_rgba(232,168,74,0.4)]">
-        <rect x="-40" y="-20" width="80" height="100" fill="none" stroke="#b58953" strokeWidth="8" />
-        <motion.circle 
-          cx="0" cy="-60" r="30" fill="none" stroke="#b58953" strokeWidth="8" 
-          animate={activeSpot === 'head' ? { y: -10, stroke: '#fcdba1' } : { y: 0 }}
-        />
-        <motion.line 
-          x1="40" y1="0" x2="80" y2="40" stroke="#fcdba1" strokeWidth="8" style={{ transformOrigin: '40px 0px' }}
-          animate={activeSpot === 'arm' ? { rotation: -30 } : { rotation: 0 }}
-        />
-        <line x1="-40" y1="0" x2="-80" y2="40" stroke="#b58953" strokeWidth="8" />
-      </svg>
-      <Hotspot x={50} y={15} label="Optical Sensors" onHover={() => setActiveSpot('head')} onLeave={() => setActiveSpot(null)} />
-      <Hotspot x={85} y={70} label="Actuator Joint" onHover={() => setActiveSpot('arm')} onLeave={() => setActiveSpot(null)} />
-    </div>
-  );
-};
-
 
 const InventionInterior = memo(function InventionInterior() {
   const { activeInvention, setActiveInvention } = useGlobalState();
   
+  if (!activeInvention) return null;
+
+  const data = INVENTION_DATA[activeInvention.type];
+
   return (
     <AnimatePresence>
-      {activeInvention && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
-          transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }} // power3.inOut equivalent
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#0a0806] bg-opacity-100"
-        >
-          {activeInvention.type === 'eye' && <EyeInterior />}
-          {activeInvention.type === 'brain' && <BrainInterior />}
-          {activeInvention.type === 'automaton' && <AutomatonInterior />}
+      <motion.div
+        initial={{ opacity: 0, filter: 'blur(10px)' }}
+        animate={{ opacity: 1, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, filter: 'blur(10px)' }}
+        transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+        className="fixed inset-0 z-[99999] bg-[#050403] bg-opacity-95 flex items-center justify-center p-12 overflow-hidden"
+      >
+        <div className="max-w-6xl w-full flex flex-col md:flex-row items-center justify-between gap-12 relative">
           
-          <div className="absolute top-12 text-center pointer-events-none">
-             <h2 className="text-5xl font-serif text-glow-strong text-[#e8c07a] tracking-widest uppercase">
-               {activeInvention.title}
-             </h2>
-          </div>
-          
-          <button 
-            onClick={() => setActiveInvention(null)}
-            className="absolute bottom-12 px-8 py-3 border border-[#b58953] text-[#b58953] rounded-full hover:bg-[#b58953] hover:text-[#0a0806] transition-colors cursor-pointer font-serif tracking-wider"
+          {/* Left Column: Lore */}
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+            className="flex-1 text-left flex flex-col items-start justify-center pr-8 border-r border-[#b58953]/30"
           >
-            Leave Interior
-          </button>
-        </motion.div>
-      )}
+            <h2 className="text-5xl md:text-7xl font-serif text-glow-strong text-[#e8c07a] mb-6">
+              {data.title}
+            </h2>
+            <p className="text-xl md:text-2xl font-serif text-[#b58953] leading-relaxed italic opacity-90 mb-12">
+              {data.lore}
+            </p>
+            
+            <button 
+              onClick={() => setActiveInvention(null)}
+              className="px-8 py-3 border border-[#b58953] text-[#b58953] rounded-full hover:bg-[#b58953] hover:text-[#0a0806] transition-colors cursor-pointer font-serif tracking-wider uppercase"
+            >
+              Return to Corridor
+            </button>
+          </motion.div>
+
+          {/* Right Column: Image */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }}
+            className="flex-1 flex items-center justify-center relative"
+          >
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 bg-[#e8c07a] opacity-5 blur-[100px] rounded-full scale-150 animate-pulse" />
+            
+            <motion.img 
+              src={data.image} 
+              alt={data.title}
+              animate={{ y: [-10, 10, -10] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              className="w-full h-auto max-h-[80vh] object-contain drop-shadow-[0_0_50px_rgba(232,168,74,0.4)] opacity-90"
+            />
+          </motion.div>
+
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 });
