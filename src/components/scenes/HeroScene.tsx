@@ -39,7 +39,6 @@ const HeroScene = memo(function HeroScene() {
   const armLeftRef = useRef<SVGGElement>(null);
   const armRightRef = useRef<SVGGElement>(null);
 
-  const { transitionToScene } = useGlobalState();
   const { isAwake, wakeUp } = useWorkshopStore();
 
   // Use refs so the scroll timeline useEffect never needs to re-run
@@ -47,15 +46,6 @@ const HeroScene = memo(function HeroScene() {
   const wakeUpRef = useRef(wakeUp);
   useEffect(() => { isAwakeRef.current = isAwake; }, [isAwake]);
   useEffect(() => { wakeUpRef.current = wakeUp; }, [wakeUp]);
-
-  // Track transition state to prevent double-trigger
-  const hasTransitionedRef = useRef(false);
-
-  const doTransition = useCallback(() => {
-    if (hasTransitionedRef.current) return;
-    hasTransitionedRef.current = true;
-    transitionToScene('scene2_gallery');
-  }, [transitionToScene]);
 
   // ── Eye tracking + blinking setup ──────────────────────────────────────────
   useEffect(() => {
@@ -88,7 +78,6 @@ const HeroScene = memo(function HeroScene() {
               wakeUpRef.current();
             }
           },
-          onLeave: doTransition,
         },
       });
 
@@ -404,8 +393,7 @@ const HeroScene = memo(function HeroScene() {
     return () => {
       ctx.revert();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doTransition]); // Intentionally omit isAwake/wakeUp — use refs to prevent timeline rebuild
+  }, []); // Intentionally omit isAwake/wakeUp — use refs to prevent timeline rebuild
 
   return (
     <div

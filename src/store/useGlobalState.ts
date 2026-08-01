@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import React from 'react';
 
 export type SceneState = 'scene1_entrance' | 'scene2_gallery' | 'scene3_ending';
 
@@ -10,7 +11,10 @@ interface GlobalState {
   // Legacy properties for old components to avoid build errors
   showEnding: boolean;
   setShowEnding: (show: boolean) => void;
-  repairPhase: 'idle' | 'transitioning' | 'ready_to_repair' | 'repaired';
+  repairPhase: 'idle' | 'transitioning' | 'repaired';
+  
+  activeInvention: { id: string; title: string; type: 'eye' | 'brain' | 'automaton' } | null;
+  setActiveInvention: (invention: { id: string; title: string; type: 'eye' | 'brain' | 'automaton' } | null) => void;
 }
 
 export const useGlobalState = create<GlobalState>((set) => ({
@@ -27,4 +31,7 @@ export const useGlobalState = create<GlobalState>((set) => ({
   showEnding: false,
   setShowEnding: (show) => set({ showEnding: show }),
   repairPhase: 'idle',
+  
+  activeInvention: null,
+  setActiveInvention: (invention) => set({ activeInvention: invention }),
 }));
