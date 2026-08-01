@@ -379,7 +379,7 @@ const MidgroundLayer = memo(function MidgroundLayer() {
 
           {/* Left panel */}
           <rect x="480" y="300" width="236" height="600"
-            fill="url(#door-metal)" rx="0"
+            fill="url(#door-metal)" rx="0" className="door-left-panel"
           />
           {/* Left panel vertical planks */}
           {[505, 540, 575, 610, 645, 680].map((x, i) => (
@@ -394,7 +394,7 @@ const MidgroundLayer = memo(function MidgroundLayer() {
 
           {/* Right panel */}
           <rect x="724" y="300" width="236" height="600"
-            fill="url(#door-metal)" rx="0"
+            fill="url(#door-metal)" rx="0" className="door-right-panel"
           />
           {[749, 784, 819, 854, 889, 924].map((x, i) => (
             <line key={i} x1={x} y1="300" x2={x} y2="900"

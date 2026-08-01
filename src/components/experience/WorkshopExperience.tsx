@@ -1,22 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState, memo } from 'react';
+import { useEffect, useRef, useState, memo, Suspense, lazy } from 'react';
 import gsap from 'gsap';
 import { useGlobalState } from '@/store/useGlobalState';
-import HeroScene from './Scene1/Core/HeroScene';
-import dynamic from 'next/dynamic';
-import TransitionParticles, { TransitionParticlesHandle } from './TransitionParticles';
+import HeroScene from '../scenes/HeroScene';
+import TransitionParticles, { TransitionParticlesHandle } from '../TransitionParticles';
+import EndingPanel from '../scenes/EndingScene';
 
 // Lazy-load Scene 2 — don't pay the render cost until needed
-const MachineRoom = dynamic(
-  () => import('./Scene2/Core/MachineRoom'),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-screen bg-[#050403]" />
-    ),
-  }
-);
+const GalleryScene = lazy(() => import('../scenes/GalleryScene'));
+
+// Lazy-load Scene 3
+const EngineEndingScene = lazy(() => import('../scenes/EngineEndingScene'));
+
 
 const SceneController = memo(function SceneController() {
   const { currentScene } = useGlobalState();
@@ -85,29 +81,34 @@ const SceneController = memo(function SceneController() {
       {/* Current Scene */}
       <div className="relative z-10 w-full h-full">
         {renderedScene === 'scene1_entrance' && <HeroScene />}
-        {renderedScene === 'scene2_machine_room' && <MachineRoom />}
+        <Suspense fallback={<div className="w-full h-screen bg-[#050403]" />}>
+          {renderedScene === 'scene2_gallery' && <GalleryScene />}
+          {renderedScene === 'scene3_ending' && <EngineEndingScene />}
+        </Suspense>
       </div>
 
-      {/* Warm Light Flood Overlay — used during scene transition */}
+      {/* Dark Transition Overlay — used during scene transition */}
       <div
         ref={warmOverlayRef}
         className="absolute inset-0 pointer-events-none opacity-0"
         style={{
           zIndex: 98000,
-          background: 'radial-gradient(ellipse 100% 80% at 50% 40%, #fcdba1 0%, #e8a84a 40%, #c89040 70%, #0a0600 100%)',
-          mixBlendMode: 'screen',
+          background: '#000000',
         }}
       />
 
       {/* Transition Particle Canvas */}
       <TransitionParticles ref={particlesRef} />
 
-      {/* Preload Scene 2 assets in a hidden div after 4s delay */}
-      {scene2Preloaded && renderedScene === 'scene1_entrance' && (
+      {/* Preload Scene 2/3 assets in a hidden div after delay */}
+      {scene2Preloaded && renderedScene !== 'scene3_ending' && (
         <div className="hidden" aria-hidden="true">
           {/* Triggering import for code-splitting */}
         </div>
       )}
+
+      {/* Final Ending UI Overlay */}
+      {renderedScene === 'scene3_ending' && <EndingPanel />}
 
     </div>
   );

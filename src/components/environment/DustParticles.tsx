@@ -59,6 +59,17 @@ const LAYERS: ParticleConfig[] = [
     drift: 60,
     rise: 120,
   },
+  // Layer 5 — Floating fibres (long, very thin, twisting)
+  {
+    count: 15,
+    size: [1, 5],
+    color: ['#ffffff', '#fcdba1'],
+    opacity: [0.1, 0.3],
+    speed: [20, 35],
+    blur: 0,
+    drift: 100,
+    rise: 250,
+  },
 ];
 
 const rand = (min: number, max: number) => Math.random() * (max - min) + min;
@@ -80,18 +91,25 @@ const DustParticles = memo(function DustParticles() {
       for (let i = 0; i < layer.count; i++) {
         const el = document.createElement('div');
         el.style.position = 'absolute';
-        el.style.borderRadius = '50%';
         el.style.pointerEvents = 'none';
         el.style.willChange = 'transform, opacity';
         el.style.backfaceVisibility = 'hidden';
 
         const size = rand(layer.size[0], layer.size[1]);
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
+        if (i < 15 && layer.rise === 250) { // Is fibre layer
+          el.style.width = `${size * 4}px`;
+          el.style.height = `${size * 0.5}px`;
+          el.style.borderRadius = '2px';
+          gsap.set(el, { rotation: rand(0, 360) });
+        } else {
+          el.style.width = `${size}px`;
+          el.style.height = `${size}px`;
+          el.style.borderRadius = '50%';
+        }
 
         const color = Array.isArray(layer.color) ? pick(layer.color) : layer.color;
         el.style.backgroundColor = color;
-        el.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+        el.style.boxShadow = layer.rise !== 250 ? `0 0 ${size * 2}px ${color}` : 'none';
 
         if (layer.blur > 0) {
           el.style.filter = `blur(${layer.blur}px)`;

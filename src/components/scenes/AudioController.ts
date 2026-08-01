@@ -23,7 +23,7 @@ const silentSound = {
   play: () => {},
   pause: () => {},
   stop: () => {},
-  volume: 0,
+  volume: ((v?: number) => { return typeof v === 'number' ? silentSound : 0; }) as any,
   loop: false,
 };
 
@@ -32,6 +32,7 @@ function createSound(src: string[], volume: number, loop = false) {
 
   try {
     // Dynamically try creating — fails silently if Howler not loaded
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Howl: H } = require('howler');
     return new H({
       src,
@@ -64,6 +65,7 @@ export const sounds = {
   mechHum:        createSound(['/sounds/mech_hum.mp3'], 0.3, true),
   snapClick:      createSound(['/sounds/snap_click.mp3'], 0.7),
   happyBeep:      createSound(['/sounds/happy_beep.mp3'], 0.5),
+  heartbeatBass:  createSound(['/sounds/heartbeat_bass.mp3'], 0.4, true),
 };
 
 let audioUnlocked = false;
@@ -81,6 +83,26 @@ export const unlockAudio = () => {
 export const safePlay = (sound: typeof silentSound) => {
   try {
     sound.play();
+  } catch {
+    // Silent fail
+  }
+};
+
+export const safeFade = (sound: typeof silentSound, from: number, to: number, duration: number) => {
+  try {
+    if ('fade' in sound && typeof sound.fade === 'function') {
+      sound.fade(from, to, duration);
+    }
+  } catch {
+    // Silent fail
+  }
+};
+
+export const setGain = (sound: typeof silentSound, volume: number) => {
+  try {
+    if ('volume' in sound && typeof sound.volume === 'function') {
+      sound.volume(volume);
+    }
   } catch {
     // Silent fail
   }

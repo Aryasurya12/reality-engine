@@ -5,15 +5,15 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGlobalState } from '@/store/useGlobalState';
 import { useWorkshopStore } from '@/store/useWorkshopStore';
-import Lighting from '../Environment/Lighting';
-import DustParticles from '../Environment/DustParticles';
+import Lighting from '../environment/Lighting';
+import DustParticles from '../environment/DustParticles';
 import TextOverlay from './TextOverlay';
-import BackgroundLayer from '../Environment/BackgroundLayer';
-import MidgroundLayer from '../Environment/MidgroundLayer';
-import ForegroundLayer from '../Environment/ForegroundLayer';
-import Robot from '../Robot/Robot';
-import { setupEyeTracking } from '../Robot/EyeTracking';
-import { playWakeUpSequence, startWalkingCycle, stopWalkingCycle } from '../Robot/RobotAnimations';
+import BackgroundLayer from '../environment/BackgroundLayer';
+import MidgroundLayer from '../environment/MidgroundLayer';
+import ForegroundLayer from '../environment/ForegroundLayer';
+import Robot from '../svg/Robot';
+import { setupEyeTracking } from '../svg/EyeTracking';
+import { playWakeUpSequence, startWalkingCycle, stopWalkingCycle } from '../svg/RobotAnimations';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -54,7 +54,7 @@ const HeroScene = memo(function HeroScene() {
   const doTransition = useCallback(() => {
     if (hasTransitionedRef.current) return;
     hasTransitionedRef.current = true;
-    transitionToScene('scene2_machine_room');
+    transitionToScene('scene2_gallery');
   }, [transitionToScene]);
 
   // ── Eye tracking + blinking setup ──────────────────────────────────────────
@@ -179,34 +179,74 @@ const HeroScene = memo(function HeroScene() {
       masterTl.to(robotContainerRef.current, {
         x: '18vw',
         y: -15,
-        scale: 0.72, // Shrinks as it walks into the scene
+        scale: 0.72,
         duration: 0.28,
-        ease: 'none',
+        ease: 'power1.inOut',
       }, 0.33);
+
+      // Body bobbing (secondary motion)
+      masterTl.to(chestRef.current, {
+        y: -2,
+        duration: 0.04,
+        yoyo: true,
+        repeat: 6,
+        ease: 'sine.inOut',
+      }, 0.35);
+
+      masterTl.to(headRef.current, {
+        y: 1,
+        rotation: 2,
+        duration: 0.04,
+        yoyo: true,
+        repeat: 6,
+        ease: 'sine.inOut',
+      }, 0.35);
 
       // Leg animation — alternating
       masterTl.to(legLeftRef.current, {
-        rotation: -20,
+        rotation: -25,
         transformOrigin: '35px 108px',
         duration: 0.04,
         yoyo: true,
         repeat: 6,
+        ease: 'sine.inOut',
       }, 0.35);
 
       masterTl.to(legRightRef.current, {
-        rotation: 20,
+        rotation: 25,
         transformOrigin: '65px 108px',
         duration: 0.04,
         yoyo: true,
         repeat: 6,
         delay: 0.02, // Offset for alternating gait
+        ease: 'sine.inOut',
+      }, 0.35);
+
+      // Arm swing — opposite to legs
+      masterTl.to(armLeftRef.current, {
+        rotation: 20,
+        transformOrigin: '22px 75px',
+        duration: 0.04,
+        yoyo: true,
+        repeat: 6,
+        ease: 'sine.inOut',
+      }, 0.35);
+
+      masterTl.to(armRightRef.current, {
+        rotation: -20,
+        transformOrigin: '78px 75px',
+        duration: 0.04,
+        yoyo: true,
+        repeat: 6,
+        delay: 0.02,
+        ease: 'sine.inOut',
       }, 0.35);
 
       // Robot looks back at user mid-walk
       masterTl.to(headRef.current, {
-        rotation: -20,
+        rotation: -25,
         duration: 0.06,
-        ease: 'power2.inOut',
+        ease: 'back.out(1.5)',
         transformOrigin: '50px 65px',
       }, 0.48);
       masterTl.to(headRef.current, {
@@ -307,10 +347,10 @@ const HeroScene = memo(function HeroScene() {
         ease: 'power2.out',
       }, 0.75);
 
-      // Camera accelerates into the door
+      // Camera accelerates deeply into the door
       masterTl.to(bgRef.current, {
-        scale: 1.6,
-        opacity: 0.2,
+        scale: 15,
+        opacity: 0,
         duration: 0.2,
         ease: 'power3.in',
       }, 0.78);
@@ -340,21 +380,24 @@ const HeroScene = memo(function HeroScene() {
 
       // ╔══════════════════════════════════════════════════════════════╗
       // ║  90% – 100%: PARTICLE BURST / SCENE SWAP                    ║
-      // ║  Scene 2 transition triggered.                               ║
+      // ║  Scene 2 transition triggered without fading to black.        ║
       // ╚══════════════════════════════════════════════════════════════╝
 
-      // Full screen bright flash (warm light flood)
+      // Pure whiteout from the warm light flood instead of fading to black
       masterTl.to(stickyRef.current, {
         backgroundColor: '#fcdba1',
-        duration: 0.08,
+        duration: 0.15,
+        ease: 'power3.in',
+      }, 0.85);
+
+      // The light completely engulfs the camera before the scene swaps
+      masterTl.to('.door-crack-glow', {
+        opacity: 1,
+        scaleX: 200,
+        scaleY: 200,
+        duration: 0.1,
         ease: 'power4.in',
       }, 0.90);
-
-      masterTl.to(stickyRef.current, {
-        backgroundColor: '#050403',
-        duration: 0.1,
-        ease: 'power2.out',
-      }, 0.95);
 
     }, containerRef);
 

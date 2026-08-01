@@ -4,7 +4,7 @@ import { useEffect, useRef, memo } from 'react';
 import gsap from 'gsap';
 import { useCursorStore } from '@/store/useCursorStore';
 
-const CustomCursor = memo(function CustomCursor() {
+const MechanicalCursor = memo(function MechanicalCursor() {
   const { cursorState } = useCursorStore();
 
   const outerRef = useRef<HTMLDivElement>(null);
@@ -239,4 +239,4 @@ const CustomCursor = memo(function CustomCursor() {
   );
 });
 
-export default CustomCursor;
+export default MechanicalCursor;

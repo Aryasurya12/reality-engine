@@ -1,23 +1,41 @@
 'use client';
 
-import { RefObject, useEffect, memo } from 'react';
+import { RefObject, useEffect, memo, forwardRef, useRef } from 'react';
 import gsap from 'gsap';
 
 interface RobotProps {
-  headRef: RefObject<SVGGElement | null>;
-  chestRef: RefObject<SVGGElement | null>;
-  eyesRef: RefObject<SVGGElement | null>;
-  antennaRef: RefObject<SVGCircleElement | null>;
-  legLeftRef: RefObject<SVGGElement | null>;
-  legRightRef: RefObject<SVGGElement | null>;
+  headRef?: RefObject<SVGGElement | null>;
+  chestRef?: RefObject<SVGGElement | null>;
+  eyesRef?: RefObject<SVGGElement | null>;
+  antennaRef?: RefObject<SVGCircleElement | null>;
+  legLeftRef?: RefObject<SVGGElement | null>;
+  legRightRef?: RefObject<SVGGElement | null>;
   armLeftRef?: RefObject<SVGGElement | null>;
   armRightRef?: RefObject<SVGGElement | null>;
 }
 
-const Robot = memo(function Robot({
-  headRef, chestRef, eyesRef, antennaRef,
-  legLeftRef, legRightRef, armLeftRef, armRightRef,
-}: RobotProps) {
+const Robot = memo(forwardRef<HTMLDivElement, RobotProps>(function Robot({
+  headRef: externalHeadRef, chestRef: externalChestRef, eyesRef: externalEyesRef, antennaRef: externalAntennaRef,
+  legLeftRef: externalLegLeftRef, legRightRef: externalLegRightRef, armLeftRef: externalArmLeftRef, armRightRef: externalArmRightRef,
+}, ref) {
+
+  const internalHeadRef = useRef<SVGGElement>(null);
+  const internalChestRef = useRef<SVGGElement>(null);
+  const internalEyesRef = useRef<SVGGElement>(null);
+  const internalAntennaRef = useRef<SVGCircleElement>(null);
+  const internalLegLeftRef = useRef<SVGGElement>(null);
+  const internalLegRightRef = useRef<SVGGElement>(null);
+  const internalArmLeftRef = useRef<SVGGElement>(null);
+  const internalArmRightRef = useRef<SVGGElement>(null);
+
+  const headRef = externalHeadRef || internalHeadRef;
+  const chestRef = externalChestRef || internalChestRef;
+  const eyesRef = externalEyesRef || internalEyesRef;
+  const antennaRef = externalAntennaRef || internalAntennaRef;
+  const legLeftRef = externalLegLeftRef || internalLegLeftRef;
+  const legRightRef = externalLegRightRef || internalLegRightRef;
+  const armLeftRef = externalArmLeftRef || internalArmLeftRef;
+  const armRightRef = externalArmRightRef || internalArmRightRef;
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -93,7 +111,7 @@ const Robot = memo(function Robot({
 
   return (
     // Robot slumped against the door frame, bottom-right of entrance
-    <div className="robot-container absolute z-40 transform-gpu"
+    <div ref={ref} className="robot-container absolute z-40 transform-gpu"
       style={{
         bottom: '8%',
         right: '22%',
@@ -170,7 +188,7 @@ const Robot = memo(function Robot({
           </g>
 
           {/* ── Body (Chest) ─────────────────────────────────────────── */}
-          <g ref={chestRef as any} style={{ transformOrigin: '50px 90px' }}>
+          <g ref={chestRef as any} className="robot-chest" style={{ transformOrigin: '50px 90px' }}>
             {/* Main chest body */}
             <rect x="22" y="68" width="56" height="42" rx="10"
               fill="url(#robot-body-grad)"
@@ -261,7 +279,7 @@ const Robot = memo(function Robot({
               stroke="#c45b36" strokeWidth="2"
             />
             {/* Antenna tip glow */}
-            <circle ref={antennaRef} cx="50" cy="6" r="4"
+            <circle ref={antennaRef as any} cx="50" cy="6" r="4"
               fill="#fcdba1" opacity="0.2"
               style={{ filter: 'blur(1.5px)' }}
             />
@@ -279,7 +297,7 @@ const Robot = memo(function Robot({
             />
 
             {/* ── Eyes (sleeping — narrow slits) ───────────────────── */}
-            <g ref={eyesRef} style={{ transformOrigin: '50px 39px' }}>
+            <g ref={eyesRef as any} style={{ transformOrigin: '50px 39px' }}>
               {/* Left eye — narrow slit when sleeping */}
               <rect x="31" y="37" width="14" height="4" rx="2"
                 fill="#fcdba1" opacity="0.3"
@@ -321,6 +339,7 @@ const Robot = memo(function Robot({
       </svg>
     </div>
   );
-});
+}));
 
+Robot.displayName = 'Robot';
 export default Robot;

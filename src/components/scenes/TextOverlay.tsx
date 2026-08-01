@@ -101,7 +101,7 @@ const TextOverlay = memo(function TextOverlay() {
           duration: 0.25,
           ease: 'power2.in',
           scrollTrigger: {
-            trigger: '.hero-scroll-container',
+            trigger: document.querySelector('.hero-scroll-container'),
             start: 'top top',
             end: '15% top',
             scrub: 0.6,
@@ -114,7 +114,7 @@ const TextOverlay = memo(function TextOverlay() {
           duration: 0.15,
           ease: 'power2.in',
           scrollTrigger: {
-            trigger: '.hero-scroll-container',
+            trigger: document.querySelector('.hero-scroll-container'),
             start: 'top top',
             end: '8% top',
             scrub: 0.4,
@@ -130,7 +130,7 @@ const TextOverlay = memo(function TextOverlay() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-end pb-[12%] text-center"
+      className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-end pb-[8%] text-center"
       style={{ perspective: '800px' }}
     >
       {/* Title group */}
@@ -148,14 +148,14 @@ const TextOverlay = memo(function TextOverlay() {
 
         <h1
           ref={titleRef}
-          className="hero-title font-serif text-4xl md:text-6xl lg:text-7xl tracking-wider leading-tight flex flex-wrap justify-center"
+          className="hero-title font-serif text-3xl md:text-5xl lg:text-5xl tracking-widest leading-tight flex flex-wrap justify-center"
           style={{
             background: 'linear-gradient(180deg, #fcdba1 0%, #c89040 60%, #8a6535 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             textShadow: 'none',
-            filter: 'drop-shadow(0 0 30px rgba(181,137,83,0.35)) drop-shadow(0 4px 12px rgba(0,0,0,0.8))',
+            filter: 'drop-shadow(0 0 10px rgba(181,137,83,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
           }}
           aria-label="The Inventor's Workshop"
         >
@@ -174,11 +174,11 @@ const TextOverlay = memo(function TextOverlay() {
       {/* Subtitle */}
       <p
         ref={subtitleRef}
-        className="hero-subtitle mt-4 font-sans text-xs md:text-sm tracking-[0.4em] uppercase opacity-0"
+        className="hero-subtitle mt-6 font-sans text-[10px] md:text-xs tracking-[0.5em] uppercase opacity-0"
         style={{
           color: '#8a6535',
-          letterSpacing: '0.4em',
-          textShadow: '0 0 20px rgba(138,101,53,0.4)',
+          letterSpacing: '0.5em',
+          textShadow: '0 0 10px rgba(138,101,53,0.2)',
         }}
       >
         Every invention begins with curiosity

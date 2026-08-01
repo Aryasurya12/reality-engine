@@ -1,17 +1,30 @@
 import { create } from 'zustand';
 
+export type SceneState = 'scene1_entrance' | 'scene2_gallery' | 'scene3_ending';
+
 interface GlobalState {
-  currentScene: 'scene1_entrance' | 'scene2_machine_room' | 'scene3_observatory';
-  isTransitioning: boolean;
+  currentScene: SceneState;
+  transitionToScene: (scene: SceneState) => void;
+  isAudioEnabled: boolean;
+  setAudioEnabled: (enabled: boolean) => void;
+  // Legacy properties for old components to avoid build errors
+  showEnding: boolean;
+  setShowEnding: (show: boolean) => void;
   repairPhase: 'idle' | 'transitioning' | 'ready_to_repair' | 'repaired';
-  transitionToScene: (scene: 'scene1_entrance' | 'scene2_machine_room' | 'scene3_observatory') => void;
-  setRepairPhase: (phase: 'idle' | 'transitioning' | 'ready_to_repair' | 'repaired') => void;
 }
 
 export const useGlobalState = create<GlobalState>((set) => ({
+  // Start at scene 1
   currentScene: 'scene1_entrance',
-  isTransitioning: false,
+  
+  transitionToScene: (scene) => {
+    set({ currentScene: scene });
+  },
+
+  isAudioEnabled: false,
+  setAudioEnabled: (enabled) => set({ isAudioEnabled: enabled }),
+  
+  showEnding: false,
+  setShowEnding: (show) => set({ showEnding: show }),
   repairPhase: 'idle',
-  transitionToScene: (scene) => set({ currentScene: scene }),
-  setRepairPhase: (phase) => set({ repairPhase: phase }),
 }));

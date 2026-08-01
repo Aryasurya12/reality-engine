@@ -9,6 +9,9 @@
   --color-workshop-glow: rgba(235, 178, 111, 0.18);
   --color-workshop-amber: #fcdba1;
   
+  --font-inter: "Inter", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
 }
