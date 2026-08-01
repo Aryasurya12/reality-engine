@@ -5,6 +5,7 @@ import InventionFrame from '../gallery/InventionFrame';
 import InventionInterior from '../gallery/InventionInterior';
 import TwistEndingScene from './TwistEndingScene';
 import DrapedShape from '../gallery/DrapedShape';
+import HalfInvention from '../gallery/HalfInvention';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -77,37 +78,49 @@ const CorridorScene = memo(function CorridorScene() {
         }, startTime + 0.03);
       });
 
-      // 3. Drive the camera forward through the 3D tunnel (0% to 90% scroll)
-      // We reduce the end trigger so we arrive faster.
+      // 3. Drive the camera forward through the 3D tunnel
       masterTl.to(cameraRigRef.current, {
-        z: 14000, // Move world towards camera
+        z: 12500, // Move world towards camera
         ease: 'none',
+        duration: 1.0
       }, 0); 
       
       // Moving flashlight effect on walls and floor
-      masterTl.to(wallLeftRef.current, { '--light-x': '14000px', ease: 'none' }, 0);
-      masterTl.to(wallRightRef.current, { '--light-x': '-14000px', ease: 'none' }, 0); // Right wall origin is right, so negative X goes deeper
-      masterTl.to(floorRef.current, { '--light-y': '14000px', ease: 'none' }, 0);
+      masterTl.to(wallLeftRef.current, { '--light-x': '12500px', ease: 'none', duration: 1.0 }, 0);
+      masterTl.to(wallRightRef.current, { '--light-x': '-12500px', ease: 'none', duration: 1.0 }, 0); 
+      masterTl.to(floorRef.current, { '--light-y': '12500px', ease: 'none', duration: 1.0 }, 0);
       
-      // 3.5 The Twist Ending Sequence (90% to 100% scroll)
-      masterTl.addLabel('chamberArrival', 0.9);
+      // 4. The Final Climax (1.0)
+      masterTl.addLabel('climaxStart', 1.0);
+
+      // The pulse accelerates rapidly (using the new HalfInvention structure)
+      masterTl.to('.workbench-scene .drape-pulse', {
+        scale: 1.5,
+        opacity: 0.8,
+        duration: 0.02,
+        yoyo: true,
+        repeat: 3,
+        ease: 'power2.inOut'
+      }, 'climaxStart');
+
+      // The final shockwave burst! (removed)
+      masterTl.addLabel('burst', 'climaxStart');
       
-      // Fade out corridor walls into darkness
-      masterTl.to([wallLeftRef.current, wallRightRef.current, floorRef.current], { opacity: 0, duration: 0.05, ease: 'power2.out' }, 'chamberArrival');
-      
-      masterTl.to(cameraRigRef.current, { z: 14500, ease: 'power2.out', duration: 0.1 }, 'chamberArrival');
-      
-      // Title card fades in
-      masterTl.to('.title-card', { opacity: 1, scale: 1, duration: 0.05, ease: 'power2.out' }, 'chamberArrival+=0.02');
-      
-      // Trigger Framer Motion credits
+      // The camera punch/shake
+      masterTl.to(cameraRigRef.current, { x: 10, y: -10, z: 12550, duration: 0.02, yoyo: true, repeat: 3 }, 'burst');
+      masterTl.to(cameraRigRef.current, { x: 0, y: 0, z: 12500, duration: 0.02 }, 'burst+=0.08');
+
+      // Clear the corridor and workbench out instantly
+      masterTl.to([wallLeftRef.current, wallRightRef.current, floorRef.current, '.workbench-scene'], { opacity: 0, duration: 0.02 }, 'burst');
+
+      // Trigger the TwistEndingScene payload
       masterTl.call(() => {
          window.dispatchEvent(new CustomEvent('showTwistCredits', { detail: true }));
-      }, [], 'chamberArrival+=0.06');
+      }, [], 'climaxStart');
       
       masterTl.call(() => {
          window.dispatchEvent(new CustomEvent('showTwistCredits', { detail: false }));
-      }, [], 'chamberArrival+=0.05');
+      }, [], '0');
       
       // Subtle walking bob
       gsap.to(cameraRigRef.current, {
@@ -119,7 +132,7 @@ const CorridorScene = memo(function CorridorScene() {
       });
       
       // Ignite frames as camera approaches them
-      const frameTriggers = [0.10, 0.35, 0.60];
+      const frameTriggers = [0.14, 0.47, 0.80];
       ['frame-eye', 'frame-brain', 'frame-automaton'].forEach((id, index) => {
         const triggerPos = frameTriggers[index];
         
@@ -130,10 +143,10 @@ const CorridorScene = memo(function CorridorScene() {
       });
       
       // Archway lighting up as we approach
-      masterTl.to('.archway-glow', { opacity: 1, duration: 0.05 }, 0.70);
+      masterTl.to('.archway-glow', { opacity: 1, duration: 0.05 }, 0.87);
       
-      // 3.5 The Door & Workbench Bridge
-      masterTl.addLabel('doorOpen', 0.74);
+      // 3.5 The Door
+      masterTl.addLabel('doorOpen', 0.92);
       // Door bursts with light from the crack
       masterTl.to('.corridor-door-light', { opacity: 0.8, duration: 0.05, ease: 'power2.in' }, 'doorOpen');
       // Doors slide open
@@ -142,23 +155,8 @@ const CorridorScene = memo(function CorridorScene() {
       // Pass through light burst
       masterTl.to('.corridor-door-light', { opacity: 0, duration: 0.05 }, 'doorOpen+=0.1');
 
-      // Reveal workbench chamber
-      masterTl.addLabel('workbench', 0.8);
-      masterTl.to('.workbench-scene', { opacity: 1, duration: 0.05, ease: 'power1.inOut' }, 'workbench');
-      
-      // Blueprint drift
-      const blueprints = document.querySelectorAll('.blueprint');
-      if (blueprints.length > 0) {
-        gsap.to(blueprints, {
-          y: "+=30",
-          rotation: "random(-5, 5)",
-          duration: 3,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut',
-          stagger: 0.5
-        });
-      }
+      // End of CorridorScene timelines
+
 
     });
 
@@ -286,7 +284,7 @@ const CorridorScene = memo(function CorridorScene() {
              <div className="absolute inset-0 flex items-center justify-center">
                <div className="relative w-full h-full flex flex-col items-center justify-center">
                  
-                 <DrapedShape showTag={true} className="z-10 scale-150" />
+                 <HalfInvention showTag={true} isEnding={false} className="z-10 scale-[1.5]" />
                  
                  {/* Blueprints drifting */}
                  <div className="blueprint absolute top-[10%] left-[20%] w-[180px] h-[240px] border border-[#b58953]/30 bg-[#0a0806]/60 p-4 opacity-70 z-20">
@@ -306,8 +304,10 @@ const CorridorScene = memo(function CorridorScene() {
              </div>
            </div>
 
+           {/* Section Break: The Final Chamber */}
+
            {/* Final Chamber */}
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full" style={{ transform: 'translateZ(-14000px)' }}>
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full" style={{ transform: 'translateZ(-12500px)' }}>
              <TwistEndingScene />
            </div>
 

@@ -88,6 +88,16 @@ const TextOverlay = memo(function TextOverlay() {
           duration: 1,
           ease: 'power2.out',
           delay: 3.5,
+          onComplete: () => {
+            // After entrance, start continuous bounce on arrow
+            gsap.to('.scroll-cta-arrow', {
+              y: 6,
+              duration: 0.9,
+              ease: 'sine.inOut',
+              yoyo: true,
+              repeat: -1,
+            });
+          },
         }
       );
 
@@ -130,7 +140,7 @@ const TextOverlay = memo(function TextOverlay() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-end pb-[8%] text-center"
+      className="absolute inset-0 z-50 pointer-events-none flex flex-col items-center justify-end pb-[4%] text-center"
       style={{ perspective: '800px' }}
     >
       {/* Title group */}
@@ -187,24 +197,29 @@ const TextOverlay = memo(function TextOverlay() {
       {/* Scroll hint */}
       <div
         ref={scrollHintRef}
-        className="mt-8 flex flex-col items-center gap-2 opacity-0"
+        className="mt-10 flex flex-col items-center gap-3 opacity-0"
       >
         <span
-          className="font-sans text-[10px] tracking-[0.3em] uppercase"
-          style={{ color: '#6b4e28', opacity: 0.8 }}
+          className="font-sans text-xs tracking-[0.45em] uppercase"
+          style={{ 
+            color: '#b58953', 
+            opacity: 0.9,
+            textShadow: '0 0 12px rgba(181,137,83,0.4)',
+            letterSpacing: '0.45em',
+          }}
         >
           Scroll to Enter
         </span>
-        {/* Animated chevron arrow */}
-        <div className="animate-scroll-bounce">
-          <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
+        {/* Animated chevron arrow — GSAP bounce handled in useEffect */}
+        <div className="scroll-cta-arrow flex flex-col items-center gap-1">
+          <svg width="20" height="30" viewBox="0 0 20 30" fill="none">
             <path
-              d="M 8 2 L 8 18 M 2 12 L 8 20 L 14 12"
+              d="M 10 2 L 10 20 M 3 13 L 10 22 L 17 13"
               stroke="#b58953"
-              strokeWidth="1.5"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity="0.7"
+              opacity="0.85"
             />
           </svg>
         </div>

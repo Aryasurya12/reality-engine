@@ -475,11 +475,13 @@ const MidgroundLayer = memo(function MidgroundLayer() {
               <rect x="485" y={y - 6} width="232" height="12" rx="3"
                 fill="#1a1208" stroke="#2a1f14" strokeWidth="1.5"
                 className="door-lock-bar"
+                opacity={i === 1 || i === 2 ? 0.25 : 0.9}
               />
               {/* Right bar */}
               <rect x="723" y={y - 6} width="232" height="12" rx="3"
                 fill="#1a1208" stroke="#2a1f14" strokeWidth="1.5"
                 className="door-lock-bar"
+                opacity={i === 1 || i === 2 ? 0.25 : 0.9}
               />
               {/* Centre join — hidden behind lock wheel (only for top/bottom bars) */}
               {i !== 1 && i !== 2 && (

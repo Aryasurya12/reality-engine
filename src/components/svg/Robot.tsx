@@ -122,14 +122,14 @@ const Robot = memo(forwardRef<HTMLDivElement, RobotProps>(function Robot({
       <svg
         viewBox="0 0 100 140"
         className="w-full h-full overflow-visible"
-        style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.8))' }}
+        style={{ filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.8)) drop-shadow(0 0 12px rgba(181,137,83,0.15))' }}
       >
         <defs>
-          {/* Copper body gradient */}
+          {/* Copper body gradient — warm amber matching site palette */}
           <linearGradient id="robot-body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#c45b36" />
-            <stop offset="50%" stopColor="#a34a2c" />
-            <stop offset="100%" stopColor="#7a3620" />
+            <stop offset="0%" stopColor="#5a3a1a" />
+            <stop offset="50%" stopColor="#3d2510" />
+            <stop offset="100%" stopColor="#2a180a" />
           </linearGradient>
 
           {/* Brass head gradient */}
@@ -192,11 +192,11 @@ const Robot = memo(forwardRef<HTMLDivElement, RobotProps>(function Robot({
             {/* Main chest body */}
             <rect x="22" y="68" width="56" height="42" rx="10"
               fill="url(#robot-body-grad)"
-              stroke="#7a3620" strokeWidth="1.5"
+              stroke="#2a1810" strokeWidth="1.5"
             />
             {/* Chest panel detail */}
             <rect x="30" y="75" width="40" height="28" rx="6"
-              fill="#8a3520" stroke="#6b2c18" strokeWidth="1"
+              fill="#1e1008" stroke="#150d05" strokeWidth="1"
             />
 
             {/* Inner glowing core / heart */}
@@ -213,8 +213,8 @@ const Robot = memo(forwardRef<HTMLDivElement, RobotProps>(function Robot({
             <circle cx="36" cy="79" r="2.5" fill="#1a1208" stroke="#3d2e1c" strokeWidth="1" />
             <circle cx="44" cy="79" r="2.5" fill="#1a1208" stroke="#3d2e1c" strokeWidth="1" />
             {/* Sleeping — indicator barely lit */}
-            <circle cx="36" cy="79" r="1.5" fill="#c45b36" opacity="0.2" />
-            <circle cx="44" cy="79" r="1.5" fill="#b58953" opacity="0.15" />
+            <circle cx="36" cy="79" r="1.5" fill="#b58953" opacity="0.15" />
+            <circle cx="44" cy="79" r="1.5" fill="#b58953" opacity="0.12" />
           </g>
 
           {/* ── Arms ─────────────────────────────────────────────────── */}
@@ -276,7 +276,7 @@ const Robot = memo(forwardRef<HTMLDivElement, RobotProps>(function Robot({
           >
             {/* Antenna */}
             <line x1="50" y1="22" x2="50" y2="8"
-              stroke="#c45b36" strokeWidth="2"
+              stroke="#8a6535" strokeWidth="2"
             />
             {/* Antenna tip glow */}
             <circle ref={antennaRef as any} cx="50" cy="6" r="4"

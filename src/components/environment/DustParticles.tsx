@@ -17,7 +17,7 @@ interface ParticleConfig {
 const LAYERS: ParticleConfig[] = [
   // Layer 1 — Dust motes (many, slow, barely visible)
   {
-    count: 35,
+    count: 10,
     size: [1, 3],
     color: ['#fcdba1', '#e8c07a', '#c89040'],
     opacity: [0.05, 0.25],
@@ -28,7 +28,7 @@ const LAYERS: ParticleConfig[] = [
   },
   // Layer 2 — Floating embers (medium, warm orange, rise faster)
   {
-    count: 12,
+    count: 6,
     size: [1.5, 3.5],
     color: ['#c45b36', '#e8723f', '#ffa052'],
     opacity: [0.15, 0.55],
@@ -39,7 +39,7 @@ const LAYERS: ParticleConfig[] = [
   },
   // Layer 3 — Sparks (tiny, bright, quick)
   {
-    count: 10,
+    count: 8,
     size: [0.8, 1.8],
     color: ['#fcdba1', '#fff8e8'],
     opacity: [0.4, 0.9],
@@ -50,8 +50,8 @@ const LAYERS: ParticleConfig[] = [
   },
   // Layer 4 — Soft glowing particles (large, very transparent, slow)
   {
-    count: 6,
-    size: [4, 8],
+    count: 4,
+    size: [6, 12],
     color: ['#fcdba1', '#b58953'],
     opacity: [0.02, 0.08],
     speed: [25, 40],
@@ -61,7 +61,7 @@ const LAYERS: ParticleConfig[] = [
   },
   // Layer 5 — Floating fibres (long, very thin, twisting)
   {
-    count: 15,
+    count: 3,
     size: [1, 5],
     color: ['#ffffff', '#fcdba1'],
     opacity: [0.1, 0.3],

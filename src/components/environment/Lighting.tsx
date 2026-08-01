@@ -28,7 +28,6 @@ const Lighting = memo(function Lighting() {
   const rayRef = useRef<HTMLDivElement>(null);
   const doorLightRef = useRef<HTMLDivElement>(null);
   const leftBeamRef = useRef<HTMLDivElement>(null);
-  const rightBeamRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     attachSharedMouseListener();
@@ -85,14 +84,6 @@ const Lighting = memo(function Lighting() {
       ease: 'sine.inOut',
       yoyo: true,
       repeat: -1,
-    });
-    gsap.to(rightBeamRef.current, {
-      opacity: 0.05,
-      duration: 6,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-      delay: 1.5,
     });
 
     return () => {
@@ -177,24 +168,7 @@ const Lighting = memo(function Lighting() {
         }}
       />
 
-      {/* Right beam */}
-      <div
-        ref={rightBeamRef}
-        className="absolute pointer-events-none"
-        style={{
-          zIndex: 2,
-          top: 0,
-          right: '15%',
-          width: '200px',
-          height: '80vh',
-          transformOrigin: 'top center',
-          transform: 'rotate(-12deg)',
-          background: 'linear-gradient(180deg, rgba(252,219,161,0.10) 0%, transparent 100%)',
-          filter: 'blur(20px)',
-          mixBlendMode: 'screen',
-          opacity: 0.05,
-        }}
-      />
+      {/* Right beam — removed, was showing as stray bar on right edge */}
 
       {/* ── Door warm glow (behind the vault door) ─────────────────────── */}
       <div
@@ -202,15 +176,15 @@ const Lighting = memo(function Lighting() {
         className="absolute pointer-events-none"
         style={{
           zIndex: 3,
-          top: '15%',
+          top: '10%',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '500px',
-          height: '600px',
-          background: 'radial-gradient(ellipse 60% 80% at 50% 40%, rgba(252,219,161,0.12) 0%, transparent 70%)',
-          filter: 'blur(30px)',
+          width: '600px',
+          height: '700px',
+          background: 'radial-gradient(ellipse 55% 75% at 50% 45%, rgba(252,219,161,0.18) 0%, rgba(181,137,83,0.08) 40%, transparent 70%)',
+          filter: 'blur(25px)',
           mixBlendMode: 'screen',
-          opacity: 0.1,
+          opacity: 0.15,
         }}
       />
 
@@ -220,8 +194,17 @@ const Lighting = memo(function Lighting() {
         style={{
           zIndex: 55,
           mixBlendMode: 'multiply',
-          background: 'radial-gradient(ellipse 85% 90% at 50% 50%, transparent 30%, #030201 100%)',
-          opacity: 0.85,
+          background: 'radial-gradient(ellipse 60% 75% at 50% 55%, transparent 20%, rgba(3,2,1,0.6) 55%, #030201 100%)',
+          opacity: 0.92,
+        }}
+      />
+      {/* ── Secondary dim for side elements (clock, lamps) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 56,
+          background: 'radial-gradient(ellipse 45% 60% at 50% 55%, transparent 0%, transparent 100%)',
+          boxShadow: 'inset 0 0 200px 80px rgba(3,2,1,0.55)',
         }}
       />
 
