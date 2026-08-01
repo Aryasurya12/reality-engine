@@ -18,17 +18,15 @@ const BackgroundLayer = memo(function BackgroundLayer() {
         }}
       />
 
-      {/* Stone texture overlay — subtle noise pattern using SVG filter */}
-      <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <filter id="stone-texture">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-            <feColorMatrix type="saturate" values="0" />
-            <feBlend in="SourceGraphic" mode="multiply" />
-          </filter>
-        </defs>
-        <rect width="100%" height="100%" filter="url(#stone-texture)" opacity="0.4" />
-      </svg>
+      {/* Stone texture overlay — static noise via CSS background (cheaper than SVG feTurbulence) */}
+      <div
+        className="absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '200px 200px',
+        }}
+      />
 
       {/* ── Main SVG Scene ─────────────────────────────────────────── */}
       <svg
@@ -133,7 +131,6 @@ const BackgroundLayer = memo(function BackgroundLayer() {
         <polygon
           points="180,0  320,0  280,180  120,180"
           fill="url(#skylight-beam-left)"
-          style={{ filter: 'blur(2px)' }}
         />
         {/* Skylight shaft walls */}
         <line x1="180" y1="0" x2="120" y2="180" stroke="#1c1610" strokeWidth="3" opacity="0.8" />
@@ -143,7 +140,6 @@ const BackgroundLayer = memo(function BackgroundLayer() {
         <polygon
           points="1120,0  1260,0  1320,180  1160,180"
           fill="url(#skylight-beam-right)"
-          style={{ filter: 'blur(2px)' }}
         />
         <line x1="1120" y1="0" x2="1160" y2="180" stroke="#1c1610" strokeWidth="3" opacity="0.8" />
         <line x1="1260" y1="0" x2="1320" y2="180" stroke="#1c1610" strokeWidth="3" opacity="0.8" />
@@ -152,14 +148,12 @@ const BackgroundLayer = memo(function BackgroundLayer() {
         {/* Left beam */}
         <polygon
           points="185,0  315,0  260,700  140,700"
-          fill="#fcdba1" opacity="0.025"
-          style={{ filter: 'blur(18px)' }}
+          fill="#fcdba1" opacity="0.018"
         />
         {/* Right beam */}
         <polygon
           points="1130,0  1255,0  1300,700  1175,700"
-          fill="#fcdba1" opacity="0.02"
-          style={{ filter: 'blur(18px)' }}
+          fill="#fcdba1" opacity="0.015"
         />
 
         {/* ── Grand Arch Door Frame ─────────────────────────────────── */}

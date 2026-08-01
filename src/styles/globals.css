@@ -97,9 +97,9 @@
   50%, 100% { transform: rotate(8deg); }
 }
 
-@keyframes door-glow-pulse {
-  0%, 100% { opacity: 0.15; filter: blur(20px); }
-  50%       { opacity: 0.35; filter: blur(15px); }
+@keyframes door-glow-pulse-opacity {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.35; }
 }
 
 @keyframes shimmer-text {
@@ -119,6 +119,14 @@
 @keyframes scroll-bounce {
   0%, 100% { transform: translateY(0); opacity: 0.7; }
   50%       { transform: translateY(6px); opacity: 1; }
+}
+
+@keyframes clock-minute-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes clock-hour-spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes antenna-pulse {
@@ -188,8 +196,27 @@
   }
 
   .animate-door-glow {
-    animation: door-glow-pulse 3s ease-in-out infinite;
-    will-change: opacity, filter;
+    /* Only animate opacity — never animate filter (it forces CPU compositing) */
+    animation: door-glow-pulse-opacity 3s ease-in-out infinite;
+    will-change: opacity;
+  }
+
+  /* Clock hands — CSS-driven for zero JS overhead */
+  .clock-minute-hand {
+    animation: clock-minute-spin 120s linear infinite;
+    transform-origin: 75px 140px;
+    will-change: transform;
+  }
+
+  .clock-hour-hand {
+    animation: clock-hour-spin 1440s linear infinite;
+    transform-origin: 75px 140px;
+    will-change: transform;
+  }
+
+  /* Paint isolation — prevents repaint from bubbling up the tree */
+  .perf-contain {
+    contain: layout style paint;
   }
 
   /* Shimmer text effect */

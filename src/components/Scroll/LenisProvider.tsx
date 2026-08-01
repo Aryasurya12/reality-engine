@@ -11,10 +11,10 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initialize Lenis with premium feel settings
     const lenis = new Lenis({
-      duration: 0.8,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth natural deceleration
-      wheelMultiplier: 1.5,
-      touchMultiplier: 2.5,
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      wheelMultiplier: 1.0,   // was 1.5 — caused jank on fast scrolls
+      touchMultiplier: 1.8,   // was 2.5
     });
 
     lenisRef.current = lenis;
@@ -27,7 +27,7 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
     };
 
     gsap.ticker.add(onTick);
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500); // restore default — prevents animation spike on tab-focus
 
     return () => {
       lenis.destroy();

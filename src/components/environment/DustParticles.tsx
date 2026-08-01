@@ -15,60 +15,38 @@ interface ParticleConfig {
 }
 
 const LAYERS: ParticleConfig[] = [
-  // Layer 1 — Dust motes (many, slow, barely visible)
-  {
-    count: 10,
-    size: [1, 3],
-    color: ['#fcdba1', '#e8c07a', '#c89040'],
-    opacity: [0.05, 0.25],
-    speed: [18, 30],
-    blur: 0.5,
-    drift: 80,
-    rise: 200,
-  },
-  // Layer 2 — Floating embers (medium, warm orange, rise faster)
-  {
-    count: 6,
-    size: [1.5, 3.5],
-    color: ['#c45b36', '#e8723f', '#ffa052'],
-    opacity: [0.15, 0.55],
-    speed: [8, 16],
-    blur: 1,
-    drift: 40,
-    rise: 350,
-  },
-  // Layer 3 — Sparks (tiny, bright, quick)
+  // Layer 1 — Dust motes (slow, barely visible)
   {
     count: 8,
-    size: [0.8, 1.8],
-    color: ['#fcdba1', '#fff8e8'],
-    opacity: [0.4, 0.9],
-    speed: [4, 9],
-    blur: 0.5,
-    drift: 25,
-    rise: 180,
-  },
-  // Layer 4 — Soft glowing particles (large, very transparent, slow)
-  {
-    count: 4,
-    size: [6, 12],
-    color: ['#fcdba1', '#b58953'],
-    opacity: [0.02, 0.08],
-    speed: [25, 40],
-    blur: 6,
-    drift: 60,
-    rise: 120,
-  },
-  // Layer 5 — Floating fibres (long, very thin, twisting)
-  {
-    count: 3,
-    size: [1, 5],
-    color: ['#ffffff', '#fcdba1'],
-    opacity: [0.1, 0.3],
+    size: [1, 2.5],
+    color: ['#fcdba1', '#e8c07a', '#c89040'],
+    opacity: [0.06, 0.22],
     speed: [20, 35],
     blur: 0,
-    drift: 100,
-    rise: 250,
+    drift: 70,
+    rise: 180,
+  },
+  // Layer 2 — Bright sparks (tiny, quick)
+  {
+    count: 5,
+    size: [0.8, 1.6],
+    color: ['#fcdba1', '#fff8e8'],
+    opacity: [0.35, 0.8],
+    speed: [5, 10],
+    blur: 0,
+    drift: 20,
+    rise: 150,
+  },
+  // Layer 3 — Soft glowing orbs (large, very transparent, slow)
+  {
+    count: 3,
+    size: [5, 10],
+    color: ['#fcdba1', '#b58953'],
+    opacity: [0.02, 0.06],
+    speed: [28, 45],
+    blur: 4,
+    drift: 50,
+    rise: 100,
   },
 ];
 
@@ -96,20 +74,13 @@ const DustParticles = memo(function DustParticles() {
         el.style.backfaceVisibility = 'hidden';
 
         const size = rand(layer.size[0], layer.size[1]);
-        if (i < 15 && layer.rise === 250) { // Is fibre layer
-          el.style.width = `${size * 4}px`;
-          el.style.height = `${size * 0.5}px`;
-          el.style.borderRadius = '2px';
-          gsap.set(el, { rotation: rand(0, 360) });
-        } else {
-          el.style.width = `${size}px`;
-          el.style.height = `${size}px`;
-          el.style.borderRadius = '50%';
-        }
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.borderRadius = '50%';
 
         const color = Array.isArray(layer.color) ? pick(layer.color) : layer.color;
         el.style.backgroundColor = color;
-        el.style.boxShadow = layer.rise !== 250 ? `0 0 ${size * 2}px ${color}` : 'none';
+        // NO box-shadow — each shadow creates a compositor layer (very expensive)
 
         if (layer.blur > 0) {
           el.style.filter = `blur(${layer.blur}px)`;
@@ -140,13 +111,12 @@ const DustParticles = memo(function DustParticles() {
           y: `-=${rise}`,
           opacity: opacity,
           duration: duration,
-          delay: rand(0, duration), // Start at random point in cycle
+          delay: rand(0, duration),
           ease: 'sine.inOut',
           repeat: -1,
           yoyo: true,
           overwrite: false,
           onRepeat() {
-            // Teleport to a new random position on each cycle (invisible during yoyo return)
             gsap.set(el, {
               left: `${rand(0, 100)}%`,
               top: `${rand(15, 85)}%`,
@@ -156,23 +126,27 @@ const DustParticles = memo(function DustParticles() {
       }
     });
 
-    // ── Parallax: move entire container subtly with mouse ────────────
-    // Single listener shared across all particles (performance win)
-    const xTo = gsap.quickTo(container, 'x', { duration: 1.5, ease: 'power2.out' });
-    const yTo = gsap.quickTo(container, 'y', { duration: 1.5, ease: 'power2.out' });
+    // ── Parallax: throttled mouse move ────────────────────────────
+    const xTo = gsap.quickTo(container, 'x', { duration: 2.0, ease: 'power2.out' });
+    const yTo = gsap.quickTo(container, 'y', { duration: 2.0, ease: 'power2.out' });
 
+    let rafId = 0;
     const handleMouseMove = (e: MouseEvent) => {
-      const xPos = (e.clientX / window.innerWidth - 0.5) * -40;
-      const yPos = (e.clientY / window.innerHeight - 0.5) * -30;
-      xTo(xPos);
-      yTo(yPos);
+      if (rafId) return; // throttle to one update per frame
+      rafId = requestAnimationFrame(() => {
+        const xPos = (e.clientX / window.innerWidth - 0.5) * -30;
+        const yPos = (e.clientY / window.innerHeight - 0.5) * -20;
+        xTo(xPos);
+        yTo(yPos);
+        rafId = 0;
+      });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      // Kill all particle tweens
+      if (rafId) cancelAnimationFrame(rafId);
       gsap.killTweensOf(allParticles);
     };
   }, []); // Empty deps — never re-creates particles

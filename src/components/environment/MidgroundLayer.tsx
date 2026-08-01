@@ -65,49 +65,35 @@ const MidgroundLayer = memo(function MidgroundLayer() {
         });
       }
 
-      // ── Lamp Light Flicker (very subtle, natural) ─────────────────
+      // ── Lamp Light Flicker (simple yoyo — cheaper than repeatRefresh) ─────
       gsap.to('.midground-lamp-glow', {
-        opacity: 'random(0.55, 0.85)',
-        duration: 'random(0.08, 0.25)',
+        opacity: 0.6,
+        duration: 0.18,
+        ease: 'sine.inOut',
+        yoyo: true,
         repeat: -1,
-        repeatRefresh: true,
-        ease: 'none',
       });
 
       // Slightly different flicker for the "light cone" beneath lamps
       gsap.to('.midground-lamp-cone', {
-        opacity: 'random(0.08, 0.18)',
-        duration: 'random(0.12, 0.35)',
-        repeat: -1,
-        repeatRefresh: true,
-        ease: 'none',
-      });
-
-      // ── Clock hands ───────────────────────────────────────────────
-      // Minute hand slow rotation
-      gsap.to('.clock-minute-hand', {
-        rotation: 360,
-        transformOrigin: '50% 100%',
-        duration: 120,
-        ease: 'none',
-        repeat: -1,
-      });
-      // Hour hand very slow
-      gsap.to('.clock-hour-hand', {
-        rotation: 360,
-        transformOrigin: '50% 100%',
-        duration: 1440,
-        ease: 'none',
-        repeat: -1,
-      });
-
-      // ── Door breathing glow (very subtle, organic) ────────────────
-      gsap.to('.door-crack-glow', {
-        opacity: 'random(0.06, 0.18)',
-        duration: 'random(0.8, 2.5)',
-        repeat: -1,
-        repeatRefresh: true,
+        opacity: 0.12,
+        duration: 0.28,
         ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+        delay: 0.1,
+      });
+
+      // ── Clock hands — CSS handles this, skip GSAP for perf ──────────
+      // (Clock hands use .clock-minute-hand and .clock-hour-hand CSS animations)
+
+      // ── Door breathing glow (simplified) ─────────────────────────────
+      gsap.to('.door-crack-glow', {
+        opacity: 0.12,
+        duration: 2.0,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
       });
 
     }, svgRef);
