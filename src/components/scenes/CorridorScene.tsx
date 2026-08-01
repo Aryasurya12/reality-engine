@@ -28,13 +28,14 @@ const SplitText = ({ text, className, lineId }: { text: string; className?: stri
 const CorridorScene = memo(function CorridorScene() {
   const containerRef = useRef<HTMLDivElement>(null);
   const cameraRigRef = useRef<HTMLDivElement>(null);
+  const wallLeftRef = useRef<HTMLDivElement>(null);
+  const wallRightRef = useRef<HTMLDivElement>(null);
+  const floorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || !cameraRigRef.current) return;
     
     let ctx = gsap.context(() => {
-      // The camera moves FORWARD into the screen (positive translateZ)
-      // We scrub from Z=0 to Z=10000 over the course of 8000vh.
       const masterTl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
@@ -51,13 +52,13 @@ const CorridorScene = memo(function CorridorScene() {
       const lines = ['line1', 'line2', 'line3'];
       lines.forEach((line, index) => {
         const letters = `.letter-${line}`;
-        const startTime = 0.05 + (index * 0.05); 
+        const startTime = 0.02 + (index * 0.02); 
         
         masterTl.to(letters, {
           y: 0,
           opacity: 1,
-          stagger: 0.01,
-          duration: 0.02,
+          stagger: 0.005,
+          duration: 0.01,
           ease: 'power2.out',
         }, startTime);
         
@@ -67,43 +68,42 @@ const CorridorScene = memo(function CorridorScene() {
           rotation: () => (Math.random() - 0.5) * 180,
           opacity: 0,
           scale: 0.2,
-          stagger: 0.005,
-          duration: 0.05,
+          stagger: 0.002,
+          duration: 0.02,
           ease: 'power1.inOut',
           filter: 'blur(4px)',
-        }, startTime + 0.05);
+        }, startTime + 0.03);
       });
 
-      // 3. Drive the camera forward through the 3D tunnel (0% to 80% scroll)
+      // 3. Drive the camera forward through the 3D tunnel (0% to 90% scroll)
+      // We reduce the end trigger so we arrive faster.
       masterTl.to(cameraRigRef.current, {
         z: 9500, // Move world towards camera
         ease: 'none',
       }, 0); 
       
-      // 4. The Twist Ending Sequence (80% to 100% scroll)
-      // Camera slows down dramatically as we reach the chamber
-      masterTl.addLabel('chamberArrival', 0.8);
+      // Moving flashlight effect on walls and floor
+      // As camera moves to Z=9500, the light position on the walls (X-axis) and floor (Y-axis) moves 9500px
+      masterTl.to(wallLeftRef.current, { '--light-x': '9500px', ease: 'none' }, 0);
+      masterTl.to(wallRightRef.current, { '--light-x': '-9500px', ease: 'none' }, 0); // Right wall origin is right, so negative X goes deeper
+      masterTl.to(floorRef.current, { '--light-y': '9500px', ease: 'none' }, 0);
       
-      masterTl.to(cameraRigRef.current, { z: 10000, ease: 'power2.out', duration: 0.2 }, 'chamberArrival');
+      // 4. The Twist Ending Sequence (90% to 100% scroll)
+      masterTl.addLabel('chamberArrival', 0.9);
       
-      // Drape lifts and dissolves
-      masterTl.to('.drape-svg', { y: -200, opacity: 0, duration: 0.1, ease: 'power2.inOut' }, 'chamberArrival+=0.05');
+      masterTl.to(cameraRigRef.current, { z: 10000, ease: 'power2.out', duration: 0.1 }, 'chamberArrival');
       
       // Title card fades in
-      masterTl.to('.title-card', { opacity: 1, duration: 0.1, ease: 'power1.inOut' }, 'chamberArrival+=0.08');
+      masterTl.to('.title-card', { opacity: 1, scale: 1, duration: 0.05, ease: 'power2.out' }, 'chamberArrival+=0.02');
       
-      // We will trigger the Framer Motion credits via state inside TwistEndingScene
-      // by dispatching a custom event or we can just animate it via GSAP to keep it perfectly synced.
-      // The prompt says "fades into the credits layer (Framer Motion)", so we'll dispatch an event.
-      // However, it's easier to just use a custom event on the window.
+      // Trigger Framer Motion credits
       masterTl.call(() => {
          window.dispatchEvent(new CustomEvent('showTwistCredits', { detail: true }));
-      }, [], 'chamberArrival+=0.15');
+      }, [], 'chamberArrival+=0.06');
       
-      // And hide it if we scroll back
       masterTl.call(() => {
          window.dispatchEvent(new CustomEvent('showTwistCredits', { detail: false }));
-      }, [], 'chamberArrival+=0.14');
+      }, [], 'chamberArrival+=0.05');
       
       // Subtle walking bob
       gsap.to(cameraRigRef.current, {
@@ -115,15 +115,13 @@ const CorridorScene = memo(function CorridorScene() {
       });
       
       // Ignite frames as camera approaches them
-      // Frames are at Z = 2500, 5000, 7500. Camera reaches them at 25%, 50%, 75% scroll.
       ['frame-eye', 'frame-brain', 'frame-automaton'].forEach((id, index) => {
-        const triggerPos = 0.2 + (index * 0.25); 
+        const triggerPos = 0.15 + (index * 0.3); 
         
         masterTl.to(`.${id} .case-rim-light`, { opacity: 1, duration: 0.02 }, triggerPos);
-        masterTl.to(`.${id} .case-invention`, { opacity: 1, duration: 0.02 }, triggerPos);
+        masterTl.to(`.${id} .case-invention`, { opacity: 1, scale: 1, duration: 0.02 }, triggerPos);
         masterTl.to(`.${id} .frame-title`, { opacity: 1, duration: 0.02 }, triggerPos);
         
-        // Idle loops for each invention
         if (id === 'frame-eye') {
           masterTl.to(`.${id} .eye-lens`, { scale: 1.1, yoyo: true, repeat: 10, duration: 0.01 }, triggerPos);
         } else if (id === 'frame-brain') {
@@ -132,6 +130,10 @@ const CorridorScene = memo(function CorridorScene() {
           masterTl.to(`.${id} .auto-arm`, { rotation: 10, yoyo: true, repeat: 10, duration: 0.01 }, triggerPos);
         }
       });
+      
+      // Archway lighting up as we approach
+      masterTl.to('.archway-glow', { opacity: 1, duration: 0.05 }, 0.45);
+      masterTl.to('.archway-glow', { opacity: 0.2, duration: 0.05 }, 0.55);
 
     });
 
@@ -139,14 +141,17 @@ const CorridorScene = memo(function CorridorScene() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full h-[8000vh] bg-[#050403]">
+    <div ref={containerRef} className="relative w-full h-[4000vh] bg-[#050403]">
       <div 
         className="sticky top-0 w-full h-screen overflow-hidden"
-        style={{ perspective: '800px', background: '#fcdba1' }}
+        style={{ perspective: '800px', background: '#050403' }}
       >
         <div className="absolute inset-0 bg-[#050403] opacity-0 hallway-bg-fade pointer-events-none z-0" />
         
-        {/* Intro Text (Fixed in Z space at the entrance) */}
+        {/* Fixed Vignette / Darkness Fog Overlay */}
+        <div className="absolute inset-0 z-30 pointer-events-none" style={{ background: 'radial-gradient(circle at center, transparent 30%, #050403 80%)' }} />
+        
+        {/* Intro Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-12 font-serif text-3xl md:text-5xl text-glow-strong text-[#e8c07a] z-10 pointer-events-none">
           <SplitText lineId="line1" text="The workshop has been silent for years." />
           <SplitText lineId="line2" text="Everything it ever built... is still inside it." />
@@ -160,42 +165,43 @@ const CorridorScene = memo(function CorridorScene() {
         >
            {/* Left Wall */}
            <div 
+             ref={wallLeftRef}
              className="absolute left-0 top-1/2 -translate-y-1/2 h-[1500px]"
              style={{ 
                width: '12000px', 
                transformOrigin: 'left center',
                transform: 'rotateY(90deg)',
-               background: 'linear-gradient(to right, #0a0806, #020101)',
+               '--light-x': '0px',
+               background: 'radial-gradient(1500px circle at var(--light-x) 50%, rgba(181,137,83,0.15) 0%, rgba(5,4,3,1) 80%), #050403',
                borderTop: '4px solid #1a1410',
                borderBottom: '4px solid #1a1410',
                transformStyle: 'preserve-3d'
-             }}
+             } as any}
            >
-             {/* Frame 1: The Mechanical Eye */}
-             <div className="absolute top-1/2 -translate-y-1/2" style={{ left: '2500px' }}>
+             <div className="absolute top-1/2 -translate-y-1/2" style={{ left: '2000px' }}>
                 <InventionFrame id="frame-eye" title="The Mechanical Eye" type="eye" />
              </div>
              
-             {/* Frame 3: The Automaton */}
-             <div className="absolute top-1/2 -translate-y-1/2" style={{ left: '7500px' }}>
+             <div className="absolute top-1/2 -translate-y-1/2" style={{ left: '8000px' }}>
                 <InventionFrame id="frame-automaton" title="The Automaton" type="automaton" />
              </div>
            </div>
            
            {/* Right Wall */}
            <div 
+             ref={wallRightRef}
              className="absolute right-0 top-1/2 -translate-y-1/2 h-[1500px]"
              style={{ 
                width: '12000px', 
                transformOrigin: 'right center',
                transform: 'rotateY(-90deg)',
-               background: 'linear-gradient(to left, #0a0806, #020101)',
+               '--light-x': '0px',
+               background: 'radial-gradient(1500px circle at calc(100% + var(--light-x)) 50%, rgba(181,137,83,0.15) 0%, rgba(5,4,3,1) 80%), #050403',
                borderTop: '4px solid #1a1410',
                borderBottom: '4px solid #1a1410',
                transformStyle: 'preserve-3d'
-             }}
+             } as any}
            >
-             {/* Frame 2: The Reasoning Engine */}
              <div className="absolute top-1/2 -translate-y-1/2" style={{ right: '5000px' }}>
                 <InventionFrame id="frame-brain" title="The Reasoning Engine" type="brain" />
              </div>
@@ -203,13 +209,15 @@ const CorridorScene = memo(function CorridorScene() {
            
            {/* Floor */}
            <div 
+             ref={floorRef}
              className="absolute left-0 top-full w-full"
              style={{ 
                height: '12000px', 
                transformOrigin: 'top center',
                transform: 'rotateX(90deg)',
-               background: 'repeating-linear-gradient(0deg, transparent, transparent 200px, rgba(232,168,74,0.03) 200px, rgba(232,168,74,0.03) 204px)' 
-             }}
+               '--light-y': '0px',
+               background: 'radial-gradient(1500px circle at 50% var(--light-y), rgba(181,137,83,0.1) 0%, rgba(5,4,3,1) 80%), repeating-linear-gradient(0deg, transparent, transparent 200px, rgba(232,168,74,0.02) 200px, rgba(232,168,74,0.02) 204px), #050403' 
+             } as any}
            />
            
            {/* Ceiling */}
@@ -223,7 +231,20 @@ const CorridorScene = memo(function CorridorScene() {
              }}
            />
 
-           {/* Final Chamber (Z = -10000) */}
+           {/* The 3D Archway (Section Break) */}
+           <div 
+             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none"
+             style={{ transform: 'translateZ(-6000px)', transformStyle: 'preserve-3d' }}
+           >
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-[120vw] h-[1500px] border-[40px] border-[#0a0806] border-b-0 flex items-center justify-center relative shadow-[0_0_100px_rgba(0,0,0,1)]">
+                   <div className="absolute inset-[-40px] border-[2px] border-[#b58953] archway-glow opacity-10 blur-[10px]" />
+                   <div className="absolute inset-[-40px] border-[1px] border-[#b58953] archway-glow opacity-20" />
+                 </div>
+              </div>
+           </div>
+
+           {/* Final Chamber */}
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full" style={{ transform: 'translateZ(-10000px)' }}>
              <TwistEndingScene />
            </div>

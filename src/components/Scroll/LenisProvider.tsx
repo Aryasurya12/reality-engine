@@ -11,10 +11,10 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initialize Lenis with premium feel settings
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 0.8,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth natural deceleration
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
+      wheelMultiplier: 1.5,
+      touchMultiplier: 2.5,
     });
 
     lenisRef.current = lenis;
