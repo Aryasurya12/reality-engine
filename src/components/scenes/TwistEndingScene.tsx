@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DrapedShape from '../gallery/DrapedShape';
 
 const TwistEndingScene = memo(function TwistEndingScene() {
   const [showCredits, setShowCredits] = useState(false);
@@ -14,13 +15,18 @@ const TwistEndingScene = memo(function TwistEndingScene() {
   }, []);
 
   return (
-    <div className="absolute top-1/2 left-1/2 w-[1200px] h-[800px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
+    <div className="absolute top-1/2 left-1/2 w-[1200px] h-[1000px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
       
       {/* Title Card fading in from darkness */}
-      <div className="relative flex flex-col items-center justify-center title-card opacity-0 scale-95">
+      <div className="relative flex flex-col items-center justify-center title-card opacity-0 scale-95 w-full h-full">
+         <DrapedShape showTag={false} className="absolute inset-0 z-0 scale-[2] opacity-30" />
+         
          <div className="absolute inset-0 bg-[#fcdba1] opacity-5 blur-[100px] rounded-full scale-150 animate-[pulse_4s_ease-in-out_infinite]" />
-         <h1 className="text-7xl md:text-8xl font-serif text-glow-strong text-[#e8c07a] tracking-widest relative z-10">ARYA</h1>
-         <p className="text-2xl font-serif text-[#b58953] mt-6 italic relative z-10">Workshop Lives Again</p>
+         
+         <div className="relative z-10 flex flex-col items-center mt-32">
+           <h1 className="text-7xl md:text-8xl font-serif text-glow-strong text-[#e8c07a] tracking-widest">ARYA</h1>
+           <p className="text-2xl font-serif text-[#b58953] mt-6 italic">The Unfinished Invention</p>
+         </div>
       </div>
       
       {/* Credits Layer (Framer Motion) */}
