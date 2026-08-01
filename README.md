@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚙️ The Inventor's Workshop
 
-## Getting Started
+> *"Every invention in this workshop began the same way — as one idea in the dark."*
 
-First, run the development server:
+An immersive, scroll-driven interactive experience built as a personal portfolio. You enter a steampunk workshop, wake a dormant automaton, follow it through a vault door into a glowing 3D corridor lined with inventions, and arrive at the workshop's next unfinished creation.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Live:** [reality-engine.vercel.app](https://reality-engine.vercel.app) *(or wherever deployed)*
+
+---
+
+## ✨ Experience Overview
+
+The site is a single, continuous scroll journey split into distinct scenes:
+
+| Scene | What happens |
+|---|---|
+| **Hero — The Entrance Hall** | A dark steampunk hall. A robot sleeps by the vault door. As you scroll, it wakes, stands, and walks to the door. The door cracks open and light floods in. |
+| **The Corridor** | A perspective 3D tunnel rendered in CSS. Three invention frames line the walls — click any to read its lore. The camera moves forward as you scroll. |
+| **The Workbench** | A half-finished steampunk automaton sits under a workbench lamp — the workshop's next invention, mid-construction. |
+| **The Ending** | The automaton is revealed in full. The workshop lives again. |
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | **React + Vite** (TypeScript) |
+| Animations | **GSAP** + ScrollTrigger (scroll-scrubbed timelines) |
+| Motion | **Framer Motion** (scene transitions, ending reveal) |
+| Scroll | **Lenis** (smooth scroll) |
+| Styling | **Tailwind CSS v4** |
+| 3D Corridor | Vanilla CSS `perspective` + `translateZ` |
+| Scene Art | Hand-authored SVG (all environments, robot, door, lamps, clock) |
+| Asset Processing | `rembg` (Python, background removal for the automaton asset) |
+| State | **Zustand** (`useWorkshopStore`, `useGlobalState`) |
+
+---
+
+## 🗂 Project Structure
+
+```
+src/
+├── components/
+│   ├── environment/          # Scene environment layers
+│   │   ├── BackgroundLayer   # Stone walls, arch, skylights
+│   │   ├── MidgroundLayer    # Vault door, hanging lamps, clock
+│   │   ├── ForegroundLayer   # Stone floor, corner shadows
+│   │   ├── Lighting          # Mouse-parallax glow, vignette, beams
+│   │   └── DustParticles     # Floating dust in lamplight
+│   ├── scenes/               # Main scene controllers
+│   │   ├── HeroScene         # Entrance hall + robot walk scroll timeline
+│   │   ├── CorridorScene     # 3D CSS tunnel + invention frames
+│   │   ├── TextOverlay       # Hero title, subtitle, CTA
+│   │   └── TwistEndingScene  # Final reveal + credits
+│   ├── gallery/              # Interactive inventory
+│   │   ├── InventionFrame    # Clickable invention cases in corridor
+│   │   ├── InventionCase     # Lore detail modal
+│   │   ├── HalfInvention     # Half-finished automaton asset component
+│   │   └── InventionInterior # Full-screen lore panel
+│   ├── svg/                  # Hand-authored SVG components
+│   │   ├── Robot             # The fully animated automaton (sleeping → walking)
+│   │   ├── MedallionLink     # GitHub / LinkedIn link medallions
+│   │   └── EyeTracking       # Robot eye follows mouse cursor
+│   ├── experience/           # Top-level scene orchestration
+│   ├── cursor/               # Custom mechanical cursor
+│   └── Scroll/               # Lenis provider wrapper
+├── store/
+│   ├── useWorkshopStore      # Robot wake state
+│   └── useGlobalState        # Active invention, scene state
+└── public/
+    └── assets/
+        └── half-invention.png  # Steampunk automaton (rembg-processed)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Running Locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Install dependencies
+npm install
 
-## Learn More
+# Start dev server
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3001](http://localhost:3001) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> The dev server runs on port **3001** (configured in `vite.config.ts`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🎨 Design System
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The entire site uses a single warm amber/copper palette derived from candlelight and aged brass:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Token | Hex | Usage |
+|---|---|---|
+| Warm Glow | `#fcdba1` | Lamp bulbs, door cracks, core glow |
+| Copper | `#b58953` | Strokes, handles, highlights |
+| Dark Copper | `#8a6535` | Secondary strokes, shadows |
+| Deep Amber | `#c89040` | Title gradient midpoint |
+| Background | `#050403` | Scene base, near-black |
+
+Typography uses **EB Garamond** (serif, for titles/body) and a system sans-serif for labels.
+
+---
+
+## 🔗 Links
+
+- **GitHub:** [github.com/Aryasurya12](https://github.com/Aryasurya12)
+- **LinkedIn:** [linkedin.com/in/aryasurya12](https://www.linkedin.com/in/aryasurya12/)
